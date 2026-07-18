@@ -1,109 +1,59 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc - main aDXC-GAMA dashboard
+# ==============================================================================
+# Purpose:
+#   Display the compact GAMA operations console.
+#
+# Layout:
+#   1. Compact header
+#   2. Message Board
+#   3. Operational objects
+#   4. Tools
+#   5. Administration entry, admin role only
+# ==============================================================================
 
-###############################################################################
-# aDXC-GAMA Dashboard
-###############################################################################
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
 
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-
+# shellcheck source=/dev/null
 . "$ADXC_HOME/lib/adxc-common.sh"
 
 adxc_load_user_config
 
-###############################################################################
-# Header Information
-###############################################################################
-
-VERSION="$(adxc_version)"
-
-HOST="$(
-    hostname 2>/dev/null \
-    || uname -n 2>/dev/null \
-    || cat /proc/sys/kernel/hostname 2>/dev/null \
-    || echo unknown
-)"
-
-USER_NAME="$(id -un)"
-
-###############################################################################
-# Dashboard Header
-###############################################################################
+version=$(adxc_version)
+host_name=$(adxc_hostname)
+user_name=$(id -un)
 
 adxc_title "aDXC-GAMA"
-
-printf \
-    ' %b[%s]%b %s@%s%*s%s\n\n' \
+printf ' %b[%s]%b %s@%s%*s%s\n\n' \
     "$ADXC_GREEN" \
     "${ADXC_ROLE^^}" \
     "$ADXC_RESET" \
-    "$USER_NAME" \
-    "$HOST" \
+    "$user_name" \
+    "$host_name" \
     20 \
     "" \
-    "v$VERSION"
-
-###############################################################################
-# Message Board
-###############################################################################
+    "v$version"
 
 adxc_render_message_board
 
-###############################################################################
-# Operational Objects
-###############################################################################
-
 adxc_section "OPERATIONAL OBJECTS"
-
 adxc_list_profiles_compact
 
-###############################################################################
-# Tools
-###############################################################################
-
 adxc_section "TOOLS"
+printf ' [C]  %-14b %s\n\n' "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" "Custom Commands"
+printf ' [P]  %-14b %s\n\n' "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" "Profile Inventory"
+printf ' [H]  %-14b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Help and command inventory"
 
-printf \
-    ' [C]  %-14b %s\n\n' \
-    "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" \
-    "Custom Commands"
-
-printf \
-    ' [P]  %-14b %s\n\n' \
-    "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" \
-    "Profile Inventory"
-
-printf \
-    ' [H]  %-14b %s\n' \
-    "${ADXC_GREEN}adxc-help${ADXC_RESET}" \
-    "Help and Command Inventory"
-
-###############################################################################
-# Administration
-###############################################################################
-
-adxc_section "ADMINISTRATION"
-
-case "${ADXC_ROLE,,}" in
-
-    admin|root)
-
-        printf \
-            ' [A]  %-14b %s\n' \
-            "${ADXC_GREEN}adxc-admin${ADXC_RESET}" \
-            "Framework Administration"
+case "$ADXC_ROLE" in
+    admin|ADMIN|root)
+        adxc_section "ADMINISTRATION"
+        printf ' [A]  %-14b %s\n' "${ADXC_GREEN}adxc-admin${ADXC_RESET}" "Framework Administration"
         ;;
-
     *)
-
-        printf \
-            '%b\n' \
-            "${ADXC_DIM}Restricted${ADXC_RESET}"
+        adxc_section "ADMINISTRATION"
+        printf '%b\n' "${ADXC_DIM} Not Available${ADXC_RESET}"
         ;;
-
 esac
-
-###############################################################################
-# Footer
-###############################################################################
 
 adxc_line

@@ -1,6 +1,32 @@
 #!/usr/bin/env bash
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
-case "$ADXC_ROLE" in admin|ADMIN|root) ;; *) adxc_error "adxc-msg-cleanup requires admin role"; exit 1;; esac
+# ==============================================================================
+# adxc-msg-cleanup - remove expired dashboard Message Board entries
+# ============================================================================== 
+
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+
+# shellcheck source=/dev/null
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+case "$ADXC_ROLE" in
+    admin|ADMIN|root) ;;
+    *)
+        adxc_error "adxc-msg-cleanup requires admin role"
+        exit 1
+        ;;
+esac
+
 removed=0
-for f in "$ADXC_HOME/messages"/*.msg; do [ -f "$f" ] || continue; if ! adxc_message_active "$f"; then rm -f "$f"; removed=$((removed+1)); fi; done
+
+for message_file in "$ADXC_HOME/messages"/*.msg; do
+    [ -f "$message_file" ] || continue
+
+    if ! adxc_message_active "$message_file"; then
+        rm -f "$message_file"
+        removed=$((removed + 1))
+    fi
+done
+
 adxc_ok "Expired messages removed: $removed"
