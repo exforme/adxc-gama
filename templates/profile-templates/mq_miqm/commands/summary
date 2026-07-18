@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# DESC: Show MIQM profile summary
+DIR=$(cd "$(dirname "$0")/.." && pwd); . "$DIR/profile.conf"; echo "MIQM SUMMARY"; echo "Queue Manager : $QMGR_NAME"; echo "Primary Node  : $PRIMARY_NODE"; echo "Secondary Node: $SECONDARY_NODE"

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# DESC: Show MIQM readiness placeholder
+DIR=$(cd "$(dirname "$0")/.." && pwd); . "$DIR/profile.conf"; echo "MIQM READINESS"; echo "QMs Active      : TBD"; echo "QMs Standby     : TBD"; echo "Shared Storage  : TBD"; echo "Failover Ready  : TBD"; echo "Profile         : $PROFILE_NAME / $QMGR_NAME"

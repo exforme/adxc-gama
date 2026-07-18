@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+. "$ADXC_HOME/lib/adxc-common.sh"
+adxc_load_user_config
+adxc_title "aDXC-GAMA"
+ver=$(adxc_version); host=$(hostname 2>/dev/null || uname -n 2>/dev/null || cat /proc/sys/kernel/hostname 2>/dev/null || echo unknown); user=$(id -un)
+printf ' %b[%s]%b %s@%s%*s%s\n\n' "$ADXC_GREEN" "${ADXC_ROLE^^}" "$ADXC_RESET" "$user" "$host" 20 "" "v$ver"
+adxc_render_message_board
+adxc_section "OPERATIONAL OBJECTS"
+adxc_list_profiles_compact
+adxc_section "TOOLS"
+printf ' [C]  %-14b %s\n\n' "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" "Custom Commands"
+printf ' [P]  %-14b %s\n\n' "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" "Profile Inventory"
+printf ' [H]  %-14b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Help and command inventory"
+case "$ADXC_ROLE" in admin|ADMIN|root) adxc_section "ADMINISTRATION"; printf ' [A]  %-14b %s\n' "${ADXC_GREEN}adxc-admin${ADXC_RESET}" "Framework Administration";; *) adxc_section "ADMINISTRATION"; printf '%b\n' "${ADXC_DIM} Not Available${ADXC_RESET}";; esac
+adxc_line

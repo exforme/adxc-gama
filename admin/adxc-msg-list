@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
+case "$ADXC_ROLE" in admin|ADMIN|root) ;; *) adxc_error "adxc-msg-list requires admin role"; exit 1;; esac
+count=$(adxc_active_message_count); adxc_title "ACTIVE MESSAGES ($count)"
+if [ "$count" -eq 0 ]; then echo "No active messages."; adxc_line; exit 0; fi
+for f in $(ls "$ADXC_HOME/messages"/*.msg 2>/dev/null | sort); do [ -f "$f" ] || continue; adxc_message_active "$f" || continue; id=$(basename "$f" .msg); type=$(adxc_message_field "$f" TYPE INFO); title=$(adxc_message_field "$f" TITLE "Untitled message"); exp=$(adxc_message_field "$f" EXPIRES "9999-12-31"); printf ' %s  %-8s\n' "$id" "$type"; printf '      %s\n' "$title"; printf '      Expires : %s\n' "$exp"; adxc_sep; done
+adxc_line

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config; run=${1:-}
+list_global(){ found=0; for f in "$ADXC_HOME/commands/global"/*; do [ -x "$f" ] || continue; found=1; b=$(basename "$f"); desc=$(grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC:[ ]*//'); printf '%-20b %s\n' "${ADXC_GREEN}$b${ADXC_RESET}" "${desc:-Custom command}"; done; [ "$found" -eq 1 ] || echo "No global custom commands found."; }
+list_profile(){ p="$1"; d="$ADXC_HOME/profiles/$p/commands"; [ -d "$d" ] || return; for f in "$d"/*; do [ -x "$f" ] || continue; b=$(basename "$f"); desc=$(grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC:[ ]*//'); printf '%-20b %s\n' "${ADXC_GREEN}$p/$b${ADXC_RESET}" "${desc:-Profile command}"; done; }
+if [ -z "$run" ] || [ "$run" = list ]; then adxc_title "CUSTOM COMMANDS"; adxc_section GLOBAL; list_global; adxc_section "PROFILE COMMANDS"; for pdir in "$ADXC_HOME/profiles"/*; do [ -d "$pdir" ] || continue; p=$(basename "$pdir"); adxc_profile_allowed "$p" && list_profile "$p"; done; adxc_line; exit 0; fi
+case "$run" in */*) prof=${run%%/*}; cmd=${run#*/}; adxc_profile_allowed "$prof" || { adxc_error "Profile exists but is not assigned to this user: $prof"; exit 1; }; target="$ADXC_HOME/profiles/$prof/commands/$cmd";; *) target="$ADXC_HOME/commands/global/$run";; esac
+[ -x "$target" ] || { adxc_error "Command not found or not executable: $run"; exit 1; }; shift || true; exec "$target" "$@"

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
+adxc_title "PROFILE INVENTORY"; found=0
+for d in "$ADXC_HOME/profiles"/*; do
+  [ -d "$d" ] || continue; found=1; p=$(basename "$d"); conf="$d/profile.conf"
+  type=$(adxc_profile_field "$conf" PROFILE_TYPE custom); desc=$(adxc_profile_field "$conf" PROFILE_DESCRIPTION "Operational profile"); qmgr=$(adxc_profile_field "$conf" QMGR_NAME -); n1=$(adxc_profile_field "$conf" PRIMARY_NODE -); n2=$(adxc_profile_field "$conf" SECONDARY_NODE -)
+  adxc_profile_allowed "$p" && access=allowed || access=inventory
+  printf '%b\n' "${ADXC_CYAN}$p${ADXC_RESET}"
+  printf '  %-14s : %s\n' Description "$desc" Type "$type" Access "$access"
+  [ "$qmgr" != - ] && printf '  %-14s : %s\n' "Queue Manager" "$qmgr"
+  [ "$n1" != - ] && printf '  %-14s : %s\n' "Primary Node" "$n1"
+  [ "$n2" != - ] && printf '  %-14s : %s\n' "Secondary Node" "$n2"
+  adxc_sep
+done
+[ "$found" -eq 1 ] || printf '%b\n' "${ADXC_YELLOW}No operational profiles configured yet.${ADXC_RESET}"
+adxc_line

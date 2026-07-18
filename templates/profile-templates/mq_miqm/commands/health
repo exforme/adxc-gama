@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# DESC: Run MIQM health placeholder
+echo "MIQM health placeholder. Add dspmq -x / NFS / process checks here."
