@@ -1,6 +1,6 @@
 COMMAND_NAME="readiness-check"
 COMMAND_TYPE="local-script"
-COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control readiness-check ${PROFILE_NAME}"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control readiness-check MQ_MIQM_EXAMPLE"
 COMMAND_DESCRIPTION="Validate failover readiness"
 COMMAND_ENABLED="YES"
 COMMAND_MENU="Control"

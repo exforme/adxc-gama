@@ -1,6 +1,6 @@
 COMMAND_NAME="cluster-status"
 COMMAND_TYPE="local-script"
-COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control cluster-status ${PROFILE_NAME}"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control cluster-status MQ_MIQM_EXAMPLE"
 COMMAND_DESCRIPTION="Run MIQM healthcheck and cluster summary"
 COMMAND_ENABLED="YES"
 COMMAND_MENU="Control"

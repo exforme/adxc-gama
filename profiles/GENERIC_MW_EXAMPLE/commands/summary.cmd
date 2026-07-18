@@ -1,0 +1,7 @@
+COMMAND_NAME="summary"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="echo Generic middleware example profile. Create a real profile from template generic_middleware."
+COMMAND_DESCRIPTION="Explain this blank example profile"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Custom Commands"
+COMMAND_GROUP="Examples"

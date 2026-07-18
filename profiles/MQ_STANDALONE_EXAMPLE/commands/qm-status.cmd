@@ -1,0 +1,7 @@
+COMMAND_NAME="qm-status"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="dspmq -m QM_EXAMPLE"
+COMMAND_DESCRIPTION="Display standalone queue manager status"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Checks"
+COMMAND_GROUP="Runtime Status"

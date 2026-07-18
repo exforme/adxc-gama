@@ -1,0 +1,7 @@
+COMMAND_NAME="qm-version"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="dspmqver"
+COMMAND_DESCRIPTION="Display IBM MQ version"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Checks"
+COMMAND_GROUP="Runtime Status"

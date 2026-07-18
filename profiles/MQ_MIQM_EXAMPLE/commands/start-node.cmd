@@ -1,6 +1,6 @@
 COMMAND_NAME="start-node"
 COMMAND_TYPE="local-script"
-COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control start-node ${PROFILE_NAME}"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control start-node MQ_MIQM_EXAMPLE"
 COMMAND_DESCRIPTION="Start local instance with standby permitted"
 COMMAND_ENABLED="YES"
 COMMAND_MENU="Control"

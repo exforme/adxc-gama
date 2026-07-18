@@ -1,5 +1,67 @@
 #!/usr/bin/env bash
-adxc_render_header(){ printf "%s\n                 %bDXC OPERATIONS CONSOLE%b\n%s\n\n" "============================================================" "$ADXC_GREEN$ADXC_BOLD" "$ADXC_RESET" "============================================================"; printf "%b[%s]%b %s@%s v%s | %s\n" "$ADXC_CYAN" "${ADXC_ROLE:-SUPPORT}" "$ADXC_RESET" "${USER:-$(id -un)}" "$(adxc_hostname)" "$(adxc_version)" "${ADXC_ACTIVE_PROFILES:-all-profiles}"; }
-adxc_render_profiles(){ local i=1 profile; adxc_print_section "PROFILES"; while read -r profile; do [ -n "$profile" ] || continue; adxc_load_profile_conf "$profile"; printf "[%d] %-10s %s\n" "$i" "$PROFILE_NAME" "$PROFILE_DESCRIPTION"; i=$((i+1)); done < <(adxc_list_profile_names); }
-adxc_render_dashboard(){ adxc_load_user_config; adxc_render_header; adxc_render_message_board; adxc_render_profiles; adxc_print_section "TOOLS"; printf "%-20s %s\n" "adxc-help" "Quick help"; printf "%-20s %s\n" "adxc-cmd --list" "Command registry"; printf "%-20s %s\n" "adxc <profile>" "Open profile"; adxc_print_section "ADMINISTRATION"; printf "%-20s %s\n" "adxc-admin" "Framework administration console"; }
-adxc_interactive_profile_menu(){ local c profile i selected; while true; do adxc_render_dashboard; printf "\nSelect profile number or q to quit: "; read -r c; case "$c" in q|Q) return 0;; ''|*[!0-9]*) adxc_warn "Invalid selection";; *) i=1; selected=""; while read -r profile; do [ "$i" -eq "$c" ] && selected="$profile" && break; i=$((i+1)); done < <(adxc_list_profile_names); [ -n "$selected" ] && adxc_profile_menu "$selected" || adxc_warn "Profile number not found"; printf "\nPress ENTER to return..."; read -r _;; esac; done; }
+adxc_render_header() {
+    printf "%s\n                 %bDXC OPERATIONS CONSOLE%b\n%s\n\n" \
+        "============================================================" \
+        "$ADXC_GREEN$ADXC_BOLD" "$ADXC_RESET" \
+        "============================================================"
+
+    printf "%b[%s]%b %s@%s v%s | %s\n" \
+        "$ADXC_CYAN" "${ADXC_ROLE:-SUPPORT}" "$ADXC_RESET" \
+        "${USER:-$(id -un)}" "$(adxc_hostname)" "$(adxc_version)" "${ADXC_ACTIVE_PROFILES:-all-profiles}"
+}
+
+adxc_render_profiles() {
+    local index=1
+    local profile
+
+    adxc_print_section "PROFILES"
+
+    while read -r profile; do
+        [ -n "$profile" ] || continue
+        adxc_load_profile_conf "$profile"
+        printf "[%d] %-24s %s\n" "$index" "$PROFILE_NAME" "$PROFILE_DESCRIPTION"
+        index=$((index + 1))
+    done < <(adxc_list_profile_names)
+}
+
+adxc_render_dashboard() {
+    adxc_load_user_config
+    adxc_render_header
+    adxc_render_message_board
+    adxc_render_profiles
+
+    adxc_print_section "TOOLS"
+    printf "%-20s %s\n" "adxc-help" "Quick help"
+    printf "%-20s %s\n" "adxc-cmd --list" "Command registry"
+    printf "%-20s %s\n" "adxc <profile>" "Open profile"
+
+    adxc_print_section "ADMINISTRATION"
+    printf "%-20s %s\n" "adxc-admin" "Framework administration console"
+}
+
+adxc_interactive_profile_menu() {
+    local choice profile index selected
+
+    while true; do
+        adxc_render_dashboard
+        printf "\nSelect profile number or q to quit: "
+        read -r choice
+
+        case "$choice" in
+            q|Q) return 0 ;;
+            ''|*[!0-9]*) adxc_warn "Invalid selection" ;;
+            *)
+                index=1
+                selected=""
+                while read -r profile; do
+                    [ "$index" -eq "$choice" ] && selected="$profile" && break
+                    index=$((index + 1))
+                done < <(adxc_list_profile_names)
+
+                [ -n "$selected" ] && adxc_profile_menu "$selected" || adxc_warn "Profile number not found"
+                printf "\nPress ENTER to return..."
+                read -r _
+                ;;
+        esac
+    done
+}

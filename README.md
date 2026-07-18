@@ -1,23 +1,38 @@
-# aDXC-GAMA 0.3.0-rc2
+# aDXC-GAMA 0.3.0-rc3
 
-Human-readable release candidate with the agreed architecture:
+Human-readable GAMA release candidate.
+
+## Architecture
 
 ```text
-Template  = Blueprint
-Profile   = Operational entity created from template
-Command   = Action available inside profile
+Template       = Blueprint
+Profile        = Operational entity created from template
+Command        = Action available inside profile
 Custom Command = Additional action registered to profile
 ```
 
-## Implemented
+## Fresh install profile model
 
-- Profile Management: create/list/delete profiles.
-- Command Management: create/list/attach/delete commands.
-- Dynamic dashboard discovery from `/opt/adxc/profiles`.
-- Command registry through `adxc-cmd --list` and `adxc-cmd PROFILE/COMMAND`.
-- First profile navigation prototype with `adxc <profile>` and `adxc --menu`.
-- mq_miqm Control Menu.
-- mq_miqm Cluster Status healthcheck integrated into Control Menu -> Cluster Operations.
+This package does **not** ship fake real operational profiles such as `TQM1` or `TQM2`.
+
+Fresh installation contains blank example profiles only:
+
+```text
+profiles/
+├── MQ_MIQM_EXAMPLE
+├── MQ_STANDALONE_EXAMPLE
+└── GENERIC_MW_EXAMPLE
+```
+
+These demonstrate profile layout and reusable menu implementation without implying real customer queue managers exist.
+
+Real operational profiles are generated from templates later:
+
+```text
+mq_miqm            -> TQM1, TQM2, TQM7
+mq_standalone      -> QM1, QM2
+generic_middleware -> ORACLE01, WEBSPHERE01, KAFKA01
+```
 
 ## mq_miqm Control Menu
 
@@ -57,8 +72,8 @@ REQUIRES_MOUNTS=/mq/mq_share/MQHA
 ## Install
 
 ```bash
-tar -xzf adxc-gama-0.3.0-rc2.tar.gz
-cd adxc-gama-0.3.0-rc2
+tar -xzf adxc-gama-0.3.0-rc3.tar.gz
+cd adxc-gama-0.3.0-rc3
 ./install.sh
 ```
 
@@ -68,19 +83,13 @@ cd adxc-gama-0.3.0-rc2
 /opt/adxc/admin/adxc-enable-user.sh monkey --role SUPPORT --force
 ```
 
-Optional profile filter:
-
-```bash
-/opt/adxc/admin/adxc-enable-user.sh monkey --role SUPPORT --profiles OS,TQM1,TQM2 --force
-```
-
 ## Main commands
 
 ```bash
 adxc
 adxc --menu
-adxc TQM1
+adxc MQ_MIQM_EXAMPLE
 adxc-cmd --list
-adxc-cmd TQM1/cluster-status
+adxc-cmd MQ_MIQM_EXAMPLE/control
 adxc-admin
 ```
