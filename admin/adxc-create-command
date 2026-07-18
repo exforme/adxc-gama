@@ -1,2 +1,105 @@
 #!/usr/bin/env bash
-set -e; ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-colors.sh"; adxc_title "CREATE CUSTOM COMMAND"; read -rp "Command name: " cname; [ -n "$cname" ] || { adxc_error "Command name required"; exit 1; }; read -rp "Target profile or GLOBAL [GLOBAL]: " target; target=${target:-GLOBAL}; if [ "$target" = GLOBAL ] || [ "$target" = global ]; then dir="$ADXC_HOME/commands/global"; else dir="$ADXC_HOME/profiles/$target/commands"; [ -d "$dir" ] || { adxc_error "Target profile not found: $target"; exit 1; }; fi; file="$dir/$cname"; [ ! -e "$file" ] || { adxc_error "Command already exists: $file"; exit 1; }; cp "$ADXC_HOME/templates/command-templates/basic-command.sh" "$file"; sed -i "s/__COMMAND_NAME__/$cname/g" "$file"; chmod 755 "$file"; adxc_ok "Custom command created: $file"; echo "List commands: adxc-cmd"
+
+###############################################################################
+# aDXC-GAMA Create Custom Command
+###############################################################################
+
+set -e
+
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+
+. "$ADXC_HOME/lib/adxc-colors.sh"
+
+###############################################################################
+# Header
+###############################################################################
+
+adxc_title "CREATE CUSTOM COMMAND"
+
+###############################################################################
+# Command Name
+###############################################################################
+
+read -rp "Command name: " COMMAND_NAME
+
+if [ -z "$COMMAND_NAME" ]
+then
+    adxc_error "Command name required"
+    exit 1
+fi
+
+###############################################################################
+# Target Profile
+###############################################################################
+
+read -rp "Target profile or GLOBAL " TARGET_PROFILE
+
+TARGET_PROFILE="${TARGET_PROFILE:-GLOBAL}"
+
+###############################################################################
+# Determine Target Directory
+###############################################################################
+
+case "${TARGET_PROFILE^^}" in
+
+    GLOBAL)
+
+        COMMAND_DIR="$ADXC_HOME/commands/global"
+        ;;
+
+    *)
+
+        COMMAND_DIR="$ADXC_HOME/profiles/$TARGET_PROFILE/commands"
+
+        if [ ! -d "$COMMAND_DIR" ]
+        then
+            adxc_error \
+                "Target profile not found: $TARGET_PROFILE"
+            exit 1
+        fi
+        ;;
+
+esac
+
+###############################################################################
+# Command File
+###############################################################################
+
+COMMAND_FILE="$COMMAND_DIR/$COMMAND_NAME"
+
+if [ -e "$COMMAND_FILE" ]
+then
+    adxc_error \
+        "Command already exists: $COMMAND_FILE"
+    exit 1
+fi
+
+###############################################################################
+# Create Command From Template
+###############################################################################
+
+cp \
+    "$ADXC_HOME/templates/command-templates/basic-command.sh" \
+    "$COMMAND_FILE"
+
+sed -i \
+    "s/__COMMAND_NAME__/$COMMAND_NAME/g" \
+    "$COMMAND_FILE"
+
+chmod 755 "$COMMAND_FILE"
+
+###############################################################################
+# Summary
+###############################################################################
+
+adxc_ok \
+    "Custom command created: $COMMAND_FILE"
+
+echo
+echo "Available command:"
+echo
+echo "    adxc-cmd"
+echo
+echo "To view all custom commands:"
+echo
+echo "    adxc-cmd list"
