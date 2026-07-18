@@ -1,65 +1,31 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# adxc-admin - framework administration menu
-# ==============================================================================
+
 # Purpose:
-#   Show administration sections. This command does not execute submenu actions yet;
-#   it displays the agreed administration structure and direct commands.
-#
-# Tip:
-#   Use "adxc-admin messages" to show Message Board Management.
-# ============================================================================== 
+#   Framework administration console.
 
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}
-
-# shellcheck source=/dev/null
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
 . "$ADXC_HOME/lib/adxc-common.sh"
+. "$ADXC_HOME/lib/adxc-commands.sh"
+. "$ADXC_HOME/lib/adxc-profiles.sh"
+. "$ADXC_HOME/lib/adxc-admin-menus.sh"
 
 adxc_load_user_config
+adxc_require_admin_role
 
-case "$ADXC_ROLE" in
-    admin|ADMIN|root) ;;
-    *)
-        adxc_error "adxc-admin requires admin role"
-        exit 1
-        ;;
-esac
+while true; do
+    adxc_admin_show_main_menu
+    printf "Select: "
+    read -r choice
 
-show_main_menu() {
-    adxc_title "FRAMEWORK ADMINISTRATION"
-    echo " [1] Profile Management"
-    echo
-    echo " [2] User Management"
-    echo
-    echo " [3] Command Management"
-    echo
-    echo " [4] Message Board Management"
-    echo
-    echo " [X] Exit"
-    adxc_line
-}
+    case "$choice" in
+        1) adxc_admin_profile_management ;;
+        2) adxc_admin_command_management ;;
+        3) "$ADXC_HOME/admin/adxc-msg-create" ;;
+        4) adxc_print_section "USER RUNTIME MANAGEMENT"; echo "Use adxc-enable-user.sh and adxc-disable-user.sh" ;;
+        q|Q) exit 0 ;;
+        *) adxc_warn "Unknown selection: $choice" ;;
+    esac
 
-show_message_board_menu() {
-    adxc_title "MESSAGE BOARD MANAGEMENT"
-    echo " Active Messages : $(adxc_active_message_count)"
-    echo
-    echo " [1] List Active Messages"
-    echo
-    echo " [2] Create Message"
-    echo
-    echo " [3] Remove Message"
-    echo
-    echo " [4] Cleanup Expired Messages"
-    echo
-    echo " [X] Back"
-    adxc_line
-}
-
-case "${1:-}" in
-    messages|msg)
-        show_message_board_menu
-        ;;
-    *)
-        show_main_menu
-        ;;
-esac
+    printf "\nPress ENTER to continue..."
+    read -r _
+done

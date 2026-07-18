@@ -1,0 +1,5 @@
+COMMAND_NAME="summary"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="uname -a"
+COMMAND_DESCRIPTION="Built-in command for OS"
+COMMAND_ENABLED="YES"

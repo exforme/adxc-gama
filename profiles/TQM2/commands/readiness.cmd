@@ -1,0 +1,5 @@
+COMMAND_NAME="readiness"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="dspmq -x"
+COMMAND_DESCRIPTION="Built-in command for TQM2"
+COMMAND_ENABLED="YES"

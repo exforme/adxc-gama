@@ -1,45 +1,21 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# uninstall.sh - remove aDXC-GAMA framework
-# ============================================================================== 
-# Usage:
-#   ./uninstall.sh
-#   ./uninstall.sh --keep-user-runtime
-# ============================================================================== 
 
 set -e
 
-DEST_DIR=${ADXC_INSTALL_DIR:-/opt/adxc}
-KEEP_USER_RUNTIME="no"
+# Purpose:
+#   Remove framework files from ADXC_INSTALL_DIR.
+#
+# Notes:
+#   User runtime directories under ~/.adxc are not removed.
 
-for arg in "$@"; do
-    case "$arg" in
-        --keep-user-runtime)
-            KEEP_USER_RUNTIME="yes"
-            ;;
-        *)
-            echo "Unknown option: $arg"
-            exit 1
-            ;;
-    esac
-done
+DEST_DIR="${ADXC_INSTALL_DIR:-/opt/adxc}"
 
-if [ "$(id -u)" -ne 0 ]; then
-    echo "ERROR: uninstall.sh must be run as root" >&2
+if [ "$(id -u)" -ne 0 ] && [ "$DEST_DIR" = "/opt/adxc" ]; then
+    echo "ERROR: root is required to uninstall from /opt/adxc"
     exit 1
 fi
 
+rm -f /usr/local/bin/adxc /usr/local/bin/adxc-help /usr/local/bin/adxc-cmd /usr/local/bin/adxc-admin
 rm -rf "$DEST_DIR"
-echo "aDXC-GAMA removed from $DEST_DIR"
 
-if [ "$KEEP_USER_RUNTIME" = "no" ]; then
-    rm -rf /root/.adxc 2>/dev/null || true
-
-    for home_dir in /home/*; do
-        [ -d "$home_dir/.adxc" ] && rm -rf "$home_dir/.adxc"
-    done
-
-    echo "User runtime directories ~/.adxc were purged."
-else
-    echo "User runtime directories ~/.adxc were intentionally left untouched."
-fi
+echo "aDXC-GAMA removed from: $DEST_DIR"
