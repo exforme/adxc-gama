@@ -1,16 +1,141 @@
 #!/usr/bin/env bash
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
-adxc_title "PROFILE INVENTORY"; found=0
-for d in "$ADXC_HOME/profiles"/*; do
-  [ -d "$d" ] || continue; found=1; p=$(basename "$d"); conf="$d/profile.conf"
-  type=$(adxc_profile_field "$conf" PROFILE_TYPE custom); desc=$(adxc_profile_field "$conf" PROFILE_DESCRIPTION "Operational profile"); qmgr=$(adxc_profile_field "$conf" QMGR_NAME -); n1=$(adxc_profile_field "$conf" PRIMARY_NODE -); n2=$(adxc_profile_field "$conf" SECONDARY_NODE -)
-  adxc_profile_allowed "$p" && access=allowed || access=inventory
-  printf '%b\n' "${ADXC_CYAN}$p${ADXC_RESET}"
-  printf '  %-14s : %s\n' Description "$desc" Type "$type" Access "$access"
-  [ "$qmgr" != - ] && printf '  %-14s : %s\n' "Queue Manager" "$qmgr"
-  [ "$n1" != - ] && printf '  %-14s : %s\n' "Primary Node" "$n1"
-  [ "$n2" != - ] && printf '  %-14s : %s\n' "Secondary Node" "$n2"
-  adxc_sep
+
+###############################################################################
+# aDXC-GAMA Profile Inventory
+###############################################################################
+
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+###############################################################################
+# Header
+###############################################################################
+
+adxc_title "PROFILE INVENTORY"
+
+FOUND=0
+
+###############################################################################
+# Profile Loop
+###############################################################################
+
+for PROFILE_DIR in "$ADXC_HOME/profiles"/*
+do
+    [ -d "$PROFILE_DIR" ] || continue
+
+    FOUND=1
+
+    PROFILE_NAME="$(basename "$PROFILE_DIR")"
+
+    PROFILE_CONF="$PROFILE_DIR/profile.conf"
+
+    PROFILE_TYPE="$(
+        adxc_profile_field \
+            "$PROFILE_CONF" \
+            PROFILE_TYPE \
+            custom
+    )"
+
+    PROFILE_DESCRIPTION="$(
+        adxc_profile_field \
+            "$PROFILE_CONF" \
+            PROFILE_DESCRIPTION \
+            "Operational profile"
+    )"
+
+    QMGR_NAME="$(
+        adxc_profile_field \
+            "$PROFILE_CONF" \
+            QMGR_NAME \
+            -
+    )"
+
+    PRIMARY_NODE="$(
+        adxc_profile_field \
+            "$PROFILE_CONF" \
+            PRIMARY_NODE \
+            -
+    )"
+
+    SECONDARY_NODE="$(
+        adxc_profile_field \
+            "$PROFILE_CONF" \
+            SECONDARY_NODE \
+            -
+    )"
+
+    if adxc_profile_allowed "$PROFILE_NAME"
+    then
+        ACCESS_LEVEL="allowed"
+    else
+        ACCESS_LEVEL="inventory"
+    fi
+
+    ###########################################################################
+    # Display Profile
+    ###########################################################################
+
+    printf '%b\n' \
+        "${ADXC_CYAN}${PROFILE_NAME}${ADXC_RESET}"
+
+    printf \
+        '  %-14s : %s\n' \
+        "Description" \
+        "$PROFILE_DESCRIPTION"
+
+    printf \
+        '  %-14s : %s\n' \
+        "Type" \
+        "$PROFILE_TYPE"
+
+    printf \
+        '  %-14s : %s\n' \
+        "Access" \
+        "$ACCESS_LEVEL"
+
+    if [ "$QMGR_NAME" != "-" ]
+    then
+        printf \
+            '  %-14s : %s\n' \
+            "Queue Manager" \
+            "$QMGR_NAME"
+    fi
+
+    if [ "$PRIMARY_NODE" != "-" ]
+    then
+        printf \
+            '  %-14s : %s\n' \
+            "Primary Node" \
+            "$PRIMARY_NODE"
+    fi
+
+    if [ "$SECONDARY_NODE" != "-" ]
+    then
+        printf \
+            '  %-14s : %s\n' \
+            "Secondary Node" \
+            "$SECONDARY_NODE"
+    fi
+
+    adxc_sep
+
 done
-[ "$found" -eq 1 ] || printf '%b\n' "${ADXC_YELLOW}No operational profiles configured yet.${ADXC_RESET}"
+
+###############################################################################
+# No Profiles Found
+###############################################################################
+
+if [ "$FOUND" -eq 0 ]
+then
+    printf '%b\n' \
+        "${ADXC_YELLOW}No operational profiles configured yet.${ADXC_RESET}"
+fi
+
+###############################################################################
+# Footer
+###############################################################################
+
 adxc_line
