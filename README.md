@@ -1,32 +1,53 @@
-# aDXC-GAMA 0.2.4-gama.1
+# aDXC-GAMA 0.2.5-gama.1
 
-Lean GAMA package with compact dashboard header and dynamic Message Board.
+Lean GAMA package with human-readable shell code, compact dashboard header, dynamic Message Board, and full command inventory.
 
 ## Install
 
 ```bash
-tar -xzf adxc-gama-0.2.4-gama.1.tar.gz
-cd adxc-gama-0.2.4-gama.1
+tar -xzf adxc-gama-0.2.5-gama.1.tar.gz
+cd adxc-gama-0.2.5-gama.1
 ./install.sh --activate-root
 source /root/.adxc/activate.sh
 adxc
 ```
 
-## Dashboard Layout
+## Human-readable code standard
 
-The main dashboard uses the approved compact header:
+All scripts in this package are intentionally formatted with:
+
+```text
+clear sections
+comments
+usage guidance
+one command per line where practical
+minimal one-liners
+maintenance tips
+```
+
+This is required because GAMA is expected to be implemented, reviewed, and customized directly in customer Linux environments.
+
+## Dashboard
+
+The main dashboard uses compact header style:
 
 ```text
 ============================================================
                      aDXC-GAMA
 ============================================================
 
- [SUPPORT] monkey@lxmqs04t                    v0.2.4-gama.1
+ [SUPPORT] monkey@lxmqs04t                    v0.2.5-gama.1
 ```
 
-The Message Board supports multiple active messages with expiration.
+## Message Board
 
-## Message Board Commands
+Multiple active messages are supported through:
+
+```text
+/opt/adxc/messages/*.msg
+```
+
+Admin commands:
 
 ```bash
 adxc-admin messages
@@ -36,37 +57,7 @@ adxc-msg-remove
 adxc-msg-cleanup
 ```
 
-## Create Message Wizard
-
-```bash
-adxc-msg-create
-```
-
-Wizard flow:
-
-```text
-Message Type -> Title -> Multi-line text -> Expiration -> Preview -> Confirm
-```
-
-Finish multi-line text with a single dot:
-
-```text
-TQM1 and TQM2 maintenance planned.
-Outage: 02:00 - 04:00 UTC
-.
-```
-
-## Profiles and Commands
-
-```bash
-adxc-profiles
-adxc-create-profile
-adxc-cmd
-adxc-cmd check-conn
-adxc-cmd TQM1/summary
-```
-
-## Help and all-command inventory
+## Help
 
 First-level help:
 
@@ -74,20 +65,19 @@ First-level help:
 adxc-help
 ```
 
-List all commands available for the current user:
+Full command inventory for current user:
 
 ```bash
 adxc-help --list-all
 ```
 
-`adxc-help --list-all` is dynamic. It lists:
+## Profiles and commands
 
-```text
-Dashboard commands
-Operational object commands
-Assigned profile commands
-Global custom commands
-Admin commands, only when current role is admin
+```bash
+adxc-profiles
+adxc-create-profile
+adxc-create-command
+adxc-cmd
+adxc-cmd check-conn
+adxc-cmd TQM1/summary
 ```
-
-For support users, admin commands are hidden. For admin users, message-board, profile, user, and command-management tools are included.

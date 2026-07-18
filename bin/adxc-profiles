@@ -1,141 +1,52 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-profiles - list configured operational profiles
+# ============================================================================== 
 
-###############################################################################
-# aDXC-GAMA Profile Inventory
-###############################################################################
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
 
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-
+# shellcheck source=/dev/null
 . "$ADXC_HOME/lib/adxc-common.sh"
 
 adxc_load_user_config
 
-###############################################################################
-# Header
-###############################################################################
-
 adxc_title "PROFILE INVENTORY"
 
-FOUND=0
+found=0
 
-###############################################################################
-# Profile Loop
-###############################################################################
+for profile_dir in "$ADXC_HOME/profiles"/*; do
+    [ -d "$profile_dir" ] || continue
+    found=1
 
-for PROFILE_DIR in "$ADXC_HOME/profiles"/*
-do
-    [ -d "$PROFILE_DIR" ] || continue
+    profile_name=$(basename "$profile_dir")
+    profile_conf="$profile_dir/profile.conf"
 
-    FOUND=1
+    profile_type=$(adxc_profile_field "$profile_conf" PROFILE_TYPE custom)
+    profile_desc=$(adxc_profile_field "$profile_conf" PROFILE_DESCRIPTION "Operational profile")
+    qmgr_name=$(adxc_profile_field "$profile_conf" QMGR_NAME -)
+    primary_node=$(adxc_profile_field "$profile_conf" PRIMARY_NODE -)
+    secondary_node=$(adxc_profile_field "$profile_conf" SECONDARY_NODE -)
 
-    PROFILE_NAME="$(basename "$PROFILE_DIR")"
-
-    PROFILE_CONF="$PROFILE_DIR/profile.conf"
-
-    PROFILE_TYPE="$(
-        adxc_profile_field \
-            "$PROFILE_CONF" \
-            PROFILE_TYPE \
-            custom
-    )"
-
-    PROFILE_DESCRIPTION="$(
-        adxc_profile_field \
-            "$PROFILE_CONF" \
-            PROFILE_DESCRIPTION \
-            "Operational profile"
-    )"
-
-    QMGR_NAME="$(
-        adxc_profile_field \
-            "$PROFILE_CONF" \
-            QMGR_NAME \
-            -
-    )"
-
-    PRIMARY_NODE="$(
-        adxc_profile_field \
-            "$PROFILE_CONF" \
-            PRIMARY_NODE \
-            -
-    )"
-
-    SECONDARY_NODE="$(
-        adxc_profile_field \
-            "$PROFILE_CONF" \
-            SECONDARY_NODE \
-            -
-    )"
-
-    if adxc_profile_allowed "$PROFILE_NAME"
-    then
-        ACCESS_LEVEL="allowed"
+    if adxc_profile_allowed "$profile_name"; then
+        access="allowed"
     else
-        ACCESS_LEVEL="inventory"
+        access="inventory"
     fi
 
-    ###########################################################################
-    # Display Profile
-    ###########################################################################
+    printf '%b\n' "${ADXC_CYAN}$profile_name${ADXC_RESET}"
+    printf '  %-14s : %s\n' "Description" "$profile_desc"
+    printf '  %-14s : %s\n' "Type" "$profile_type"
+    printf '  %-14s : %s\n' "Access" "$access"
 
-    printf '%b\n' \
-        "${ADXC_CYAN}${PROFILE_NAME}${ADXC_RESET}"
-
-    printf \
-        '  %-14s : %s\n' \
-        "Description" \
-        "$PROFILE_DESCRIPTION"
-
-    printf \
-        '  %-14s : %s\n' \
-        "Type" \
-        "$PROFILE_TYPE"
-
-    printf \
-        '  %-14s : %s\n' \
-        "Access" \
-        "$ACCESS_LEVEL"
-
-    if [ "$QMGR_NAME" != "-" ]
-    then
-        printf \
-            '  %-14s : %s\n' \
-            "Queue Manager" \
-            "$QMGR_NAME"
-    fi
-
-    if [ "$PRIMARY_NODE" != "-" ]
-    then
-        printf \
-            '  %-14s : %s\n' \
-            "Primary Node" \
-            "$PRIMARY_NODE"
-    fi
-
-    if [ "$SECONDARY_NODE" != "-" ]
-    then
-        printf \
-            '  %-14s : %s\n' \
-            "Secondary Node" \
-            "$SECONDARY_NODE"
-    fi
+    [ "$qmgr_name" != "-" ] && printf '  %-14s : %s\n' "Queue Manager" "$qmgr_name"
+    [ "$primary_node" != "-" ] && printf '  %-14s : %s\n' "Primary Node" "$primary_node"
+    [ "$secondary_node" != "-" ] && printf '  %-14s : %s\n' "Secondary Node" "$secondary_node"
 
     adxc_sep
-
 done
 
-###############################################################################
-# No Profiles Found
-###############################################################################
-
-if [ "$FOUND" -eq 0 ]
-then
-    printf '%b\n' \
-        "${ADXC_YELLOW}No operational profiles configured yet.${ADXC_RESET}"
+if [ "$found" -ne 1 ]; then
+    printf '%b\n' "${ADXC_YELLOW}No operational profiles configured yet.${ADXC_RESET}"
 fi
-
-###############################################################################
-# Footer
-###############################################################################
 
 adxc_line

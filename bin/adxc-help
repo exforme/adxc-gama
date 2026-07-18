@@ -1,132 +1,205 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-help - first-level help and complete command inventory
+# ==============================================================================
+# Usage:
+#   adxc-help
+#       Shows first-level GAMA entry points.
+#
+#   adxc-help --list-all
+#       Shows all executable commands available for the current user.
+#
+# Tip:
+#   --list-all is role-aware and profile-aware.
+# ============================================================================== 
+
 ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+
+# shellcheck source=/dev/null
 . "$ADXC_HOME/lib/adxc-common.sh"
+
 adxc_load_user_config
 
-print_desc() {
-  f="$1"
-  grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC:[ ]*//'
-}
-
 count_total=0
-inc_count() { count_total=$((count_total+1)); }
 
-show_first_level() {
-  adxc_title "aDXC-GAMA HELP"
-  printf '%b\n' "${ADXC_CYAN}FIRST LEVEL MENUS / ENTRY POINTS${ADXC_RESET}"
-  adxc_sep
-  printf ' %-18b %s\n' "${ADXC_GREEN}adxc${ADXC_RESET}" "Main dashboard"
-  printf ' %-18b %s\n' "${ADXC_GREEN}adxc-os${ADXC_RESET}" "Linux health checks and diagnostics"
-  printf ' %-18b %s\n' "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" "Custom command catalog"
-  printf ' %-18b %s\n' "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" "Operational profile inventory"
-  printf ' %-18b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Help and command inventory"
-  case "$ADXC_ROLE" in
-    admin|ADMIN|root)
-      printf ' %-18b %s\n' "${ADXC_GREEN}adxc-admin${ADXC_RESET}" "Framework administration"
-      ;;
-  esac
-  adxc_line
-  echo "Use: adxc-help --list-all"
-  echo "To list all commands currently available for this user."
+increment_total() {
+    count_total=$((count_total + 1))
 }
 
-show_list_all() {
-  user=$(id -un)
-  host=$(hostname 2>/dev/null || uname -n 2>/dev/null || cat /proc/sys/kernel/hostname 2>/dev/null || echo unknown)
-  ver=$(adxc_version)
-  global_count=0
-  profile_count=0
-  admin_count=0
+command_description() {
+    local file="$1"
+    grep -m1 '^# DESC:' "$file" 2>/dev/null | sed 's/^# DESC:[ ]*//'
+}
 
-  adxc_title "AVAILABLE COMMANDS"
-  printf ' User    : %s\n' "$user"
-  printf ' Host    : %s\n' "$host"
-  printf ' Role    : %s\n' "$ADXC_ROLE"
-  printf ' Version : %s\n' "$ver"
+show_first_level_help() {
+    adxc_title "aDXC-GAMA HELP"
 
-  adxc_section "DASHBOARD / HELP"
-  printf ' %-28b %s\n' "${ADXC_GREEN}adxc${ADXC_RESET}" "Open main GAMA dashboard"; inc_count
-  printf ' %-28b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Show first-level help"; inc_count
-  printf ' %-28b %s\n' "${ADXC_GREEN}adxc-help --list-all${ADXC_RESET}" "List all commands available for current user"; inc_count
+    printf '%b\n' "${ADXC_CYAN}FIRST LEVEL MENUS / ENTRY POINTS${ADXC_RESET}"
+    adxc_sep
 
-  adxc_section "OPERATIONAL OBJECTS"
-  printf ' %-28b %s\n' "${ADXC_GREEN}adxc-os${ADXC_RESET}" "Linux health checks and diagnostics"; inc_count
+    printf ' %-18b %s\n' "${ADXC_GREEN}adxc${ADXC_RESET}" "Main dashboard"
+    printf ' %-18b %s\n' "${ADXC_GREEN}adxc-os${ADXC_RESET}" "Linux health checks and diagnostics"
+    printf ' %-18b %s\n' "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" "Custom command catalog"
+    printf ' %-18b %s\n' "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" "Operational profile inventory"
+    printf ' %-18b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Help and command inventory"
 
-  adxc_section "PROFILE COMMANDS"
-  found_profile_cmd=0
-  for pdir in "$ADXC_HOME/profiles"/*; do
-    [ -d "$pdir" ] || continue
-    prof=$(basename "$pdir")
-    adxc_profile_allowed "$prof" || continue
-    cdir="$pdir/commands"
-    [ -d "$cdir" ] || continue
-    printed_header=0
-    for f in "$cdir"/*; do
-      [ -x "$f" ] || continue
-      cmd=$(basename "$f")
-      desc=$(print_desc "$f")
-      [ -n "$desc" ] || desc="Profile command"
-      if [ "$printed_header" -eq 0 ]; then
-        printf '%b\n' "${ADXC_CYAN}$prof${ADXC_RESET}"
-        printed_header=1
-      fi
-      printf ' %-28b %s\n' "${ADXC_GREEN}adxc-cmd $prof/$cmd${ADXC_RESET}" "$desc"
-      found_profile_cmd=1
-      profile_count=$((profile_count+1)); inc_count
+    case "$ADXC_ROLE" in
+        admin|ADMIN|root)
+            printf ' %-18b %s\n' "${ADXC_GREEN}adxc-admin${ADXC_RESET}" "Framework administration"
+            ;;
+    esac
+
+    adxc_line
+    echo "Use: adxc-help --list-all"
+    echo "To list all commands currently available for this user."
+}
+
+show_all_available_commands() {
+    local user_name
+    local host_name
+    local version
+    local global_count=0
+    local profile_count=0
+    local admin_count=0
+    local profile_dir
+    local profile_name
+    local command_dir
+    local command_file
+    local command_name
+    local description
+    local printed_profile_header
+    local found_profile_command=0
+    local found_global_command=0
+
+    user_name=$(id -un)
+    host_name=$(adxc_hostname)
+    version=$(adxc_version)
+
+    adxc_title "AVAILABLE COMMANDS"
+    printf ' User    : %s\n' "$user_name"
+    printf ' Host    : %s\n' "$host_name"
+    printf ' Role    : %s\n' "$ADXC_ROLE"
+    printf ' Version : %s\n' "$version"
+
+    adxc_section "DASHBOARD / HELP"
+    printf ' %-32b %s\n' "${ADXC_GREEN}adxc${ADXC_RESET}" "Open main GAMA dashboard"
+    increment_total
+    printf ' %-32b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Show first-level help"
+    increment_total
+    printf ' %-32b %s\n' "${ADXC_GREEN}adxc-help --list-all${ADXC_RESET}" "List all commands available for current user"
+    increment_total
+
+    adxc_section "OPERATIONAL OBJECTS"
+    printf ' %-32b %s\n' "${ADXC_GREEN}adxc-os${ADXC_RESET}" "Linux health checks and diagnostics"
+    increment_total
+
+    adxc_section "PROFILE COMMANDS"
+
+    for profile_dir in "$ADXC_HOME/profiles"/*; do
+        [ -d "$profile_dir" ] || continue
+
+        profile_name=$(basename "$profile_dir")
+        adxc_profile_allowed "$profile_name" || continue
+
+        command_dir="$profile_dir/commands"
+        [ -d "$command_dir" ] || continue
+
+        printed_profile_header=0
+
+        for command_file in "$command_dir"/*; do
+            [ -x "$command_file" ] || continue
+
+            command_name=$(basename "$command_file")
+            description=$(command_description "$command_file")
+            [ -n "$description" ] || description="Profile command"
+
+            if [ "$printed_profile_header" -eq 0 ]; then
+                printf '%b\n' "${ADXC_CYAN}$profile_name${ADXC_RESET}"
+                printed_profile_header=1
+            fi
+
+            printf ' %-32b %s\n' \
+                "${ADXC_GREEN}adxc-cmd $profile_name/$command_name${ADXC_RESET}" \
+                "$description"
+
+            found_profile_command=1
+            profile_count=$((profile_count + 1))
+            increment_total
+        done
+
+        if [ "$printed_profile_header" -eq 1 ]; then
+            echo
+        fi
     done
-    [ "$printed_header" -eq 1 ] && echo
-  done
-  [ "$found_profile_cmd" -eq 1 ] || printf '%b\n' "${ADXC_YELLOW}No assigned profile commands available for this user.${ADXC_RESET}"
 
-  adxc_section "CUSTOM COMMANDS"
-  found_global=0
-  for f in "$ADXC_HOME/commands/global"/*; do
-    [ -x "$f" ] || continue
-    cmd=$(basename "$f")
-    desc=$(print_desc "$f")
-    [ -n "$desc" ] || desc="Global custom command"
-    printf ' %-28b %s\n' "${ADXC_GREEN}adxc-cmd $cmd${ADXC_RESET}" "$desc"
-    found_global=1
-    global_count=$((global_count+1)); inc_count
-  done
-  [ "$found_global" -eq 1 ] || printf '%b\n' "${ADXC_YELLOW}No global custom commands available.${ADXC_RESET}"
+    if [ "$found_profile_command" -ne 1 ]; then
+        printf '%b\n' "${ADXC_YELLOW}No assigned profile commands available for this user.${ADXC_RESET}"
+    fi
 
-  case "$ADXC_ROLE" in
-    admin|ADMIN|root)
-      adxc_section "ADMINISTRATION"
-      for item in \
-        "adxc-admin|Framework administration main menu" \
-        "adxc-admin messages|Message Board Management submenu" \
-        "adxc-profiles|List operational profile inventory" \
-        "adxc-create-profile|Create operational profile from template" \
-        "adxc-create-command|Create global or profile-specific custom command" \
-        "adxc-enable-user.sh|Enable aDXC runtime for a user" \
-        "adxc-disable-user.sh|Disable aDXC runtime for a user" \
-        "adxc-msg-list|List active dashboard messages" \
-        "adxc-msg-create|Create dashboard message with wizard" \
-        "adxc-msg-remove|Remove dashboard message" \
-        "adxc-msg-cleanup|Remove expired dashboard messages"
-      do
-        cmd=${item%%|*}; desc=${item#*|}
-        printf ' %-28b %s\n' "${ADXC_GREEN}$cmd${ADXC_RESET}" "$desc"
-        admin_count=$((admin_count+1)); inc_count
-      done
-      ;;
-    *)
-      adxc_section "ADMINISTRATION"
-      printf '%b\n' "${ADXC_DIM}Not available for this role.${ADXC_RESET}"
-      ;;
-  esac
+    adxc_section "CUSTOM COMMANDS"
 
-  adxc_section "SUMMARY"
-  printf ' %-22s : %s\n' "Global Commands" "$global_count"
-  printf ' %-22s : %s\n' "Profile Commands" "$profile_count"
-  printf ' %-22s : %s\n' "Admin Commands" "$admin_count"
-  printf ' %-22s : %s\n' "Total Available" "$count_total"
-  adxc_line
+    for command_file in "$ADXC_HOME/commands/global"/*; do
+        [ -x "$command_file" ] || continue
+
+        command_name=$(basename "$command_file")
+        description=$(command_description "$command_file")
+        [ -n "$description" ] || description="Global custom command"
+
+        printf ' %-32b %s\n' \
+            "${ADXC_GREEN}adxc-cmd $command_name${ADXC_RESET}" \
+            "$description"
+
+        found_global_command=1
+        global_count=$((global_count + 1))
+        increment_total
+    done
+
+    if [ "$found_global_command" -ne 1 ]; then
+        printf '%b\n' "${ADXC_YELLOW}No global custom commands available.${ADXC_RESET}"
+    fi
+
+    case "$ADXC_ROLE" in
+        admin|ADMIN|root)
+            adxc_section "ADMINISTRATION"
+
+            while IFS='|' read -r command_name description; do
+                [ -n "$command_name" ] || continue
+                printf ' %-32b %s\n' "${ADXC_GREEN}$command_name${ADXC_RESET}" "$description"
+                admin_count=$((admin_count + 1))
+                increment_total
+            done <<'ADXC_ADMIN_COMMANDS'
+adxc-admin|Framework administration main menu
+adxc-admin messages|Message Board Management submenu
+adxc-profiles|List operational profile inventory
+adxc-create-profile|Create operational profile from template
+adxc-create-command|Create global or profile-specific custom command
+adxc-enable-user.sh|Enable aDXC runtime for a user
+adxc-disable-user.sh|Disable aDXC runtime for a user
+adxc-msg-list|List active dashboard messages
+adxc-msg-create|Create dashboard message with wizard
+adxc-msg-remove|Remove dashboard message
+adxc-msg-cleanup|Remove expired dashboard messages
+ADXC_ADMIN_COMMANDS
+            ;;
+        *)
+            adxc_section "ADMINISTRATION"
+            printf '%b\n' "${ADXC_DIM}Not available for this role.${ADXC_RESET}"
+            ;;
+    esac
+
+    adxc_section "SUMMARY"
+    printf ' %-22s : %s\n' "Global Commands" "$global_count"
+    printf ' %-22s : %s\n' "Profile Commands" "$profile_count"
+    printf ' %-22s : %s\n' "Admin Commands" "$admin_count"
+    printf ' %-22s : %s\n' "Total Available" "$count_total"
+    adxc_line
 }
 
 case "${1:-}" in
-  --list-all|-list-all|list-all) show_list_all ;;
-  *) show_first_level ;;
+    --list-all|-list-all|list-all)
+        show_all_available_commands
+        ;;
+    *)
+        show_first_level_help
+        ;;
 esac

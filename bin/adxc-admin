@@ -1,100 +1,65 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-admin - framework administration menu
+# ==============================================================================
+# Purpose:
+#   Show administration sections. This command does not execute submenu actions yet;
+#   it displays the agreed administration structure and direct commands.
+#
+# Tip:
+#   Use "adxc-admin messages" to show Message Board Management.
+# ============================================================================== 
 
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
 
+# shellcheck source=/dev/null
 . "$ADXC_HOME/lib/adxc-common.sh"
 
 adxc_load_user_config
 
-###############################################################################
-# Security
-###############################################################################
-
 case "$ADXC_ROLE" in
-    admin|ADMIN|root)
-        ;;
+    admin|ADMIN|root) ;;
     *)
         adxc_error "adxc-admin requires admin role"
         exit 1
         ;;
 esac
 
-###############################################################################
-# Main Menu
-###############################################################################
-
-show_main()
-{
+show_main_menu() {
     adxc_title "FRAMEWORK ADMINISTRATION"
-
-    printf " %-3s %-40s\n\n" \
-        "[1]" "Profile Management"
-
-    printf " %-3s %-40s\n\n" \
-        "[2]" "User Management"
-
-    printf " %-3s %-40s\n\n" \
-        "[3]" "Command Management"
-
-    printf " %-3s %-40s\n\n" \
-        "[4]" "Message Board Management"
-
-    printf " %-3s %-40s\n\n" \
-        "[5]" "Framework Configuration"
-
-    printf " %-3s %-40s\n\n" \
-        "[6]" "Diagnostics & Health"
-
-    printf " %-3s %-40s\n\n" \
-        "[X]" "Exit"
-
+    echo " [1] Profile Management"
+    echo
+    echo " [2] User Management"
+    echo
+    echo " [3] Command Management"
+    echo
+    echo " [4] Message Board Management"
+    echo
+    echo " [X] Exit"
     adxc_line
 }
 
-###############################################################################
-# Message Board Menu
-###############################################################################
-
-show_messages()
-{
-    local ACTIVE
-
-    ACTIVE=$(adxc_active_message_count)
-
+show_message_board_menu() {
     adxc_title "MESSAGE BOARD MANAGEMENT"
-
-    printf " Active Messages : %s\n\n" "$ACTIVE"
-
-    printf " %-3s %-40s\n\n" \
-        "[1]" "List Active Messages"
-
-    printf " %-3s %-40s\n\n" \
-        "[2]" "Create Message"
-
-    printf " %-3s %-40s\n\n" \
-        "[3]" "Remove Message"
-
-    printf " %-3s %-40s\n\n" \
-        "[4]" "Cleanup Expired Messages"
-
-    printf " %-3s %-40s\n\n" \
-        "[X]" "Back"
-
+    echo " Active Messages : $(adxc_active_message_count)"
+    echo
+    echo " [1] List Active Messages"
+    echo
+    echo " [2] Create Message"
+    echo
+    echo " [3] Remove Message"
+    echo
+    echo " [4] Cleanup Expired Messages"
+    echo
+    echo " [X] Back"
     adxc_line
 }
-
-###############################################################################
-# Entry Point
-###############################################################################
 
 case "${1:-}" in
-
     messages|msg)
-        show_messages
+        show_message_board_menu
         ;;
-
     *)
-        show_main
+        show_main_menu
         ;;
-
 esac

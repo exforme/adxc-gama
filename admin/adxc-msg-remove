@@ -1,10 +1,48 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-msg-remove - remove a dashboard Message Board entry
+# ============================================================================== 
+
 set -e
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
-case "$ADXC_ROLE" in admin|ADMIN|root) ;; *) adxc_error "adxc-msg-remove requires admin role"; exit 1;; esac
-id=${1:-}
-if [ -z "$id" ]; then "$ADXC_HOME/admin/adxc-msg-list"; read -rp "Message ID : " id; fi
-file="$ADXC_HOME/messages/$id.msg"; [ -f "$file" ] || { adxc_error "Message not found: $id"; exit 1; }
-title=$(adxc_message_field "$file" TITLE "Untitled message")
-read -rp "Remove message '$title' (Y/N)? " yn
-case "$yn" in Y|y|YES|yes) rm -f "$file"; adxc_ok "Message removed: $id";; *) echo "Message removal cancelled.";; esac
+
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+
+# shellcheck source=/dev/null
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+case "$ADXC_ROLE" in
+    admin|ADMIN|root) ;;
+    *)
+        adxc_error "adxc-msg-remove requires admin role"
+        exit 1
+        ;;
+esac
+
+message_id="${1:-}"
+
+if [ -z "$message_id" ]; then
+    "$ADXC_HOME/admin/adxc-msg-list"
+    read -r -p "Message ID : " message_id
+fi
+
+message_file="$ADXC_HOME/messages/$message_id.msg"
+
+if [ ! -f "$message_file" ]; then
+    adxc_error "Message not found: $message_id"
+    exit 1
+fi
+
+message_title=$(adxc_message_field "$message_file" TITLE "Untitled message")
+read -r -p "Remove message '$message_title' (Y/N)? " confirm
+
+case "$confirm" in
+    Y|y|YES|yes)
+        rm -f "$message_file"
+        adxc_ok "Message removed: $message_id"
+        ;;
+    *)
+        echo "Message removal cancelled."
+        ;;
+esac

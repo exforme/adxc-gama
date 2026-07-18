@@ -1,22 +1,25 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# install.sh - install aDXC-GAMA framework
+# ============================================================================== 
+# Usage:
+#   ./install.sh
+#   ./install.sh --activate-root
+#
+# Default install location:
+#   /opt/adxc
+#
+# Override install location:
+#   ADXC_INSTALL_DIR=/custom/path ./install.sh
+# ============================================================================== 
 
 set -e
 
-###############################################################################
-# aDXC-GAMA Installer
-###############################################################################
-
-SRC="$(cd "$(dirname "$0")" && pwd)"
-DEST="${ADXC_INSTALL_DIR:-/opt/adxc}"
-
+SOURCE_DIR=$(cd "$(dirname "$0")" && pwd)
+DEST_DIR=${ADXC_INSTALL_DIR:-/opt/adxc}
 ACTIVATE_ROOT="no"
 
-###############################################################################
-# Parse arguments
-###############################################################################
-
-for arg in "$@"
-do
+for arg in "$@"; do
     case "$arg" in
         --activate-root)
             ACTIVATE_ROOT="yes"
@@ -28,109 +31,45 @@ do
     esac
 done
 
-###############################################################################
-# Root check
-###############################################################################
-
-if [ "$(id -u)" -ne 0 ]
-then
+if [ "$(id -u)" -ne 0 ]; then
     echo "ERROR: install.sh must be run as root" >&2
     exit 1
 fi
 
-###############################################################################
-# Load libraries
-###############################################################################
-
-. "$SRC/lib/adxc-colors.sh"
-
-###############################################################################
-# Banner
-###############################################################################
+# shellcheck source=/dev/null
+. "$SOURCE_DIR/lib/adxc-colors.sh"
 
 adxc_title "aDXC-GAMA INSTALLER"
+printf '%-24s : %s\n' "Source" "$SOURCE_DIR"
+printf '%-24s : %s\n' "Destination" "$DEST_DIR"
+printf '%-24s : %s\n' "Version" "$(cat "$SOURCE_DIR/VERSION")"
 
-printf '%-24s : %s\n' "Source"      "$SRC"
-printf '%-24s : %s\n' "Destination" "$DEST"
-printf '%-24s : %s\n' "Version"     "$(cat "$SRC/VERSION")"
+rm -rf "$DEST_DIR"
+mkdir -p "$DEST_DIR"
+cp -a "$SOURCE_DIR"/. "$DEST_DIR"/
 
-###############################################################################
-# Install files
-###############################################################################
-
-rm -rf "$DEST"
-
-mkdir -p "$DEST"
-
-cp -a "$SRC"/. "$DEST"/
-
-###############################################################################
-# Permissions
-###############################################################################
-
-find "$DEST" -type d -exec chmod 755 {} \;
-find "$DEST" -type f -exec chmod 644 {} \;
-
-find \
-    "$DEST/bin" \
-    "$DEST/admin" \
-    "$DEST/commands" \
-    "$DEST/templates/profile-templates" \
-    -type f \
-    -exec chmod 755 {} \;
-
-chmod 755 \
-    "$DEST/install.sh" \
-    "$DEST/uninstall.sh"
-
-###############################################################################
-# Summary
-###############################################################################
+find "$DEST_DIR" -type d -exec chmod 755 {} \;
+find "$DEST_DIR" -type f -exec chmod 644 {} \;
+find "$DEST_DIR/bin" "$DEST_DIR/admin" "$DEST_DIR/commands" "$DEST_DIR/templates/profile-templates" -type f -exec chmod 755 {} \;
+chmod 755 "$DEST_DIR/install.sh" "$DEST_DIR/uninstall.sh"
 
 adxc_section "INSTALLATION COMPLETE"
+printf '%-24b : %s\n' "${ADXC_GREEN}Dashboard${ADXC_RESET}" "adxc"
+printf '%-24b : %s\n' "${ADXC_GREEN}Help${ADXC_RESET}" "adxc-help"
+printf '%-24b : %s\n' "${ADXC_GREEN}All commands${ADXC_RESET}" "adxc-help --list-all"
+printf '%-24b : %s\n' "${ADXC_GREEN}Profile inventory${ADXC_RESET}" "adxc-profiles"
+printf '%-24b : %s\n' "${ADXC_GREEN}Message admin${ADXC_RESET}" "adxc-admin messages"
+printf '%-24b : %s\n' "${ADXC_GREEN}Create message${ADXC_RESET}" "adxc-msg-create"
+printf '%-24b : %s\n' "${ADXC_GREEN}Create profile${ADXC_RESET}" "adxc-create-profile"
+printf '%-24b : %s\n' "${ADXC_GREEN}Create command${ADXC_RESET}" "adxc-create-command"
+printf '%-24b : %s\n' "${ADXC_GREEN}Custom commands${ADXC_RESET}" "adxc-cmd"
 
-printf '%-24b : %s\n' \
-    "${ADXC_GREEN}Profile inventory${ADXC_RESET}" \
-    "adxc-profiles"
-
-printf '%-24b : %s\n' \
-    "${ADXC_GREEN}Create profile${ADXC_RESET}" \
-    "adxc-create-profile"
-
-printf '%-24b : %s\n' \
-    "${ADXC_GREEN}Create command${ADXC_RESET}" \
-    "adxc-create-command"
-
-printf '%-24b : %s\n' \
-    "${ADXC_GREEN}Custom commands${ADXC_RESET}" \
-    "adxc-cmd"
-
-###############################################################################
-# Optional root activation
-###############################################################################
-
-if [ "$ACTIVATE_ROOT" = "yes" ]
-then
-    "$DEST/admin/adxc-enable-user.sh" \
-        root \
-        --role admin \
-        --force \
-        >/dev/null
-
+if [ "$ACTIVATE_ROOT" = "yes" ]; then
+    "$DEST_DIR/admin/adxc-enable-user.sh" root --role admin --force >/dev/null
     adxc_ok "Root runtime created: /root/.adxc"
-
-    echo
-    echo "Run:"
-    echo
-    echo "    source /root/.adxc/activate.sh"
-    echo "    adxc"
+    echo "Run: source /root/.adxc/activate.sh && adxc"
 else
-    adxc_warn \
-        "Root runtime not created. Use --activate-root if root should run adxc directly."
+    adxc_warn "Root runtime not created. Use --activate-root if root should run adxc directly."
 fi
-
-###############################################################################
-# End
-###############################################################################
 
 adxc_line

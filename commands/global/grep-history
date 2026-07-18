@@ -1,3 +1,12 @@
 #!/usr/bin/env bash
 # DESC: Search shell history placeholder
-pattern=${1:-}; [ -n "$pattern" ] || { echo "Usage: grep-history <pattern>"; exit 1; }; grep -i -- "$pattern" "$HOME/.bash_history" 2>/dev/null || true
+# ============================================================================== 
+
+pattern="${1:-}"
+
+if [ -z "$pattern" ]; then
+    echo "Usage: grep-history <pattern>"
+    exit 1
+fi
+
+grep -i -- "$pattern" "$HOME/.bash_history" 2>/dev/null || true

@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
 # DESC: Show MQ status placeholder
-DIR=$(cd "$(dirname "$0")/.." && pwd); . "$DIR/profile.conf"; echo "MQ STATUS for $QMGR_NAME"; echo "Placeholder: add dspmq logic here."
+# ==============================================================================
+
+profile_dir=$(cd "$(dirname "$0")/.." && pwd)
+# shellcheck source=/dev/null
+. "$profile_dir/profile.conf"
+
+echo "MQ STATUS for $QMGR_NAME"
+echo "Placeholder: add dspmq logic here."

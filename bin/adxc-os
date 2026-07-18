@@ -1,68 +1,35 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-os - basic Linux health checks and diagnostics
+# ==============================================================================
+# Current scope:
+#   - hostname
+#   - kernel
+#   - uptime
+#   - filesystems above threshold
+#   - NFS mounts
+#
+# Tip:
+#   This is intentionally simple. Production checks can be expanded later.
+# ============================================================================== 
 
-###############################################################################
-# Linux Health Checks and Diagnostics
-###############################################################################
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
 
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-
+# shellcheck source=/dev/null
 . "$ADXC_HOME/lib/adxc-common.sh"
 
 adxc_load_user_config
 
-###############################################################################
-# System Information
-###############################################################################
+adxc_title "OS - Linux health checks and diagnostics"
 
-HOSTNAME="$(hostname)"
+printf '%-18s : %s\n' "Hostname" "$(adxc_hostname)"
+printf '%-18s : %s\n' "Kernel" "$(uname -r)"
+printf '%-18s : %s\n' "Uptime" "$(uptime -p 2>/dev/null || uptime)"
 
-KERNEL_VERSION="$(uname -r)"
-
-UPTIME="$(
-    uptime -p 2>/dev/null \
-    || uptime
-)"
-
-###############################################################################
-# Dashboard
-###############################################################################
-
-adxc_title "OS - Linux Health Checks and Diagnostics"
-
-printf '%-18s : %s\n' "Hostname" "$HOSTNAME"
-printf '%-18s : %s\n' "Kernel"   "$KERNEL_VERSION"
-printf '%-18s : %s\n' "Uptime"   "$UPTIME"
-
-###############################################################################
-# Filesystems
-###############################################################################
-
-adxc_section "FILESYSTEMS"
-
-df -hP | awk '
-    NR == 1
-    ||
-    $5 + 0 >= 80
-    {
-        print
-    }
-'
-
-###############################################################################
-# NFS Mounts
-###############################################################################
+adxc_section "FILESYSTEMS >= 80%"
+df -hP | awk 'NR == 1 || $5 + 0 >= 80 { print }'
 
 adxc_section "NFS MOUNTS"
-
-if mount | grep -qi nfs
-then
-    mount | grep -i nfs
-else
-    echo "No NFS mounts found"
-fi
-
-###############################################################################
-# End
-###############################################################################
+mount | grep -i nfs || echo "No NFS mounts found"
 
 adxc_line

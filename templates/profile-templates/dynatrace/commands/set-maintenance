@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 # DESC: Dynatrace maintenance placeholder
+# ==============================================================================
+
 echo "Dynatrace maintenance placeholder. Add customer API logic here."

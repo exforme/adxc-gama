@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
 # DESC: Validate basic host/network connectivity placeholder
+# ==============================================================================
+# Placeholder custom command.
+# Replace this logic with customer-specific connectivity checks.
+# ============================================================================== 
+
 echo "check-conn: placeholder command. Customize for customer connectivity checks."

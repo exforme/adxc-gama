@@ -1,24 +1,130 @@
 #!/usr/bin/env bash
+# ==============================================================================
+# adxc-msg-create - create a dashboard Message Board entry
+# ============================================================================== 
+# Wizard flow:
+#   1. Message type
+#   2. Title
+#   3. Multi-line text
+#   4. Expiration date
+#   5. Preview
+#   6. Confirmation
+#
+# Tip:
+#   Finish multi-line text with a single dot: .
+# ============================================================================== 
+
 set -e
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
-case "$ADXC_ROLE" in admin|ADMIN|root) ;; *) adxc_error "adxc-msg-create requires admin role"; exit 1;; esac
+
+ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+
+# shellcheck source=/dev/null
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+case "$ADXC_ROLE" in
+    admin|ADMIN|root) ;;
+    *)
+        adxc_error "adxc-msg-create requires admin role"
+        exit 1
+        ;;
+esac
+
 mkdir -p "$ADXC_HOME/messages"
+
 adxc_title "CREATE MESSAGE"
-echo " Message Type"; echo; echo " [1] INFO"; echo; echo " [2] WARNING"; echo; echo " [3] CRITICAL"; echo
-read -rp " Selection : " sel
-case "$sel" in 1|INFO|info) type=INFO;; 2|WARNING|warning) type=WARNING;; 3|CRITICAL|critical) type=CRITICAL;; *) adxc_error "Invalid message type"; exit 1;; esac
-read -rp " Title : " title
-[ -n "$title" ] || { adxc_error "Title is required"; exit 1; }
-echo " Message Text"; echo " Enter multi-line text. Finish with a single dot (.)"
+
+echo " Message Type"
+echo
+echo " [1] INFO"
+echo
+echo " [2] WARNING"
+echo
+echo " [3] CRITICAL"
+echo
+read -r -p " Selection : " selection
+
+case "$selection" in
+    1|INFO|info)
+        message_type="INFO"
+        ;;
+    2|WARNING|warning)
+        message_type="WARNING"
+        ;;
+    3|CRITICAL|critical)
+        message_type="CRITICAL"
+        ;;
+    *)
+        adxc_error "Invalid message type"
+        exit 1
+        ;;
+esac
+
+read -r -p " Title : " message_title
+
+if [ -z "$message_title" ]; then
+    adxc_error "Title is required"
+    exit 1
+fi
+
+echo " Message Text"
+echo " Enter multi-line text. Finish with a single dot (.)"
+
 text_file=$(mktemp)
-while IFS= read -r line; do [ "$line" = "." ] && break; printf '%s\n' "$line" >> "$text_file"; done
-read -rp " Expiration Date [YYYY-MM-DD] : " expires
-case "$expires" in ????-??-??) ;; *) rm -f "$text_file"; adxc_error "Expiration date must be YYYY-MM-DD"; exit 1;; esac
+
+while IFS= read -r line; do
+    [ "$line" = "." ] && break
+    printf '%s\n' "$line" >> "$text_file"
+done
+
+read -r -p " Expiration Date [YYYY-MM-DD] : " expires
+
+case "$expires" in
+    ????-??-??) ;;
+    *)
+        rm -f "$text_file"
+        adxc_error "Expiration date must be YYYY-MM-DD"
+        exit 1
+        ;;
+esac
+
 adxc_title "MESSAGE PREVIEW"
-color=$(adxc_label_color "$type"); printf '%b[%s]%b\n\n' "$color" "$type" "$ADXC_RESET"; printf '%s\n\n' "$title"; cat "$text_file"; printf '\nExpires : %s\n' "$expires"; adxc_line
-read -rp " Create Message (Y/N)? " yn
-case "$yn" in Y|y|YES|yes) ;; *) rm -f "$text_file"; echo "Message creation cancelled."; exit 0;; esac
-id=$(adxc_next_message_id); file="$ADXC_HOME/messages/$id.msg"
-{ echo "TYPE=$type"; echo "TITLE=$title"; echo "EXPIRES=$expires"; echo "TEXT<<ADXC_EOF"; cat "$text_file"; echo "ADXC_EOF"; } > "$file"
-chmod 644 "$file"; rm -f "$text_file"
-adxc_ok "Message created."; printf 'ID      : %s\n' "$id"; printf 'Type    : %s\n' "$type"; printf 'Expires : %s\n' "$expires"; echo "Visible immediately on next adxc refresh."
+message_color=$(adxc_label_color "$message_type")
+printf '%b[%s]%b\n\n' "$message_color" "$message_type" "$ADXC_RESET"
+printf '%s\n\n' "$message_title"
+cat "$text_file"
+printf '\nExpires : %s\n' "$expires"
+adxc_line
+
+read -r -p " Create Message (Y/N)? " confirm
+
+case "$confirm" in
+    Y|y|YES|yes) ;;
+    *)
+        rm -f "$text_file"
+        echo "Message creation cancelled."
+        exit 0
+        ;;
+esac
+
+message_id=$(adxc_next_message_id)
+message_file="$ADXC_HOME/messages/$message_id.msg"
+
+{
+    echo "TYPE=$message_type"
+    echo "TITLE=$message_title"
+    echo "EXPIRES=$expires"
+    echo "TEXT<<ADXC_EOF"
+    cat "$text_file"
+    echo "ADXC_EOF"
+} > "$message_file"
+
+chmod 644 "$message_file"
+rm -f "$text_file"
+
+adxc_ok "Message created."
+printf 'ID      : %s\n' "$message_id"
+printf 'Type    : %s\n' "$message_type"
+printf 'Expires : %s\n' "$expires"
+echo "Visible immediately on next adxc refresh."
