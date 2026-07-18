@@ -1,7 +1,68 @@
 #!/usr/bin/env bash
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config
-adxc_title "OS - Linux health checks and diagnostics"
-printf '%-18s : %s\n' Hostname "$(hostname)" Kernel "$(uname -r)" Uptime "$(uptime -p 2>/dev/null || uptime)"
-adxc_section FILESYSTEMS; df -hP | awk 'NR==1 || $5+0 >= 80 {print}'
-adxc_section "NFS MOUNTS"; mount | grep -i nfs || echo "No NFS mounts found"
+
+###############################################################################
+# Linux Health Checks and Diagnostics
+###############################################################################
+
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+###############################################################################
+# System Information
+###############################################################################
+
+HOSTNAME="$(hostname)"
+
+KERNEL_VERSION="$(uname -r)"
+
+UPTIME="$(
+    uptime -p 2>/dev/null \
+    || uptime
+)"
+
+###############################################################################
+# Dashboard
+###############################################################################
+
+adxc_title "OS - Linux Health Checks and Diagnostics"
+
+printf '%-18s : %s\n' "Hostname" "$HOSTNAME"
+printf '%-18s : %s\n' "Kernel"   "$KERNEL_VERSION"
+printf '%-18s : %s\n' "Uptime"   "$UPTIME"
+
+###############################################################################
+# Filesystems
+###############################################################################
+
+adxc_section "FILESYSTEMS"
+
+df -hP | awk '
+    NR == 1
+    ||
+    $5 + 0 >= 80
+    {
+        print
+    }
+'
+
+###############################################################################
+# NFS Mounts
+###############################################################################
+
+adxc_section "NFS MOUNTS"
+
+if mount | grep -qi nfs
+then
+    mount | grep -i nfs
+else
+    echo "No NFS mounts found"
+fi
+
+###############################################################################
+# End
+###############################################################################
+
 adxc_line
