@@ -1,25 +1,5 @@
 #!/usr/bin/env bash
-
-# Purpose:
-#   Authoritative command registry for aDXC-GAMA.
-
 ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-
+. "$ADXC_HOME/lib/adxc-common.sh"; . "$ADXC_HOME/lib/adxc-profiles.sh"; . "$ADXC_HOME/lib/adxc-commands.sh"
 adxc_load_user_config
-
-case "${1:-}" in
-    ""|--list)
-        adxc_print_section "COMMAND REGISTRY"
-        adxc_list_command_registry
-        ;;
-    */*)
-        adxc_execute_command "$1"
-        ;;
-    *)
-        adxc_error "Use adxc-cmd --list or adxc-cmd PROFILE/COMMAND"
-        exit 1
-        ;;
-esac
+case "${1:-}" in ""|--list) adxc_print_section "COMMAND REGISTRY"; adxc_list_command_registry;; */*) adxc_execute_command "$1";; *) adxc_error "Use adxc-cmd --list or adxc-cmd PROFILE/COMMAND"; exit 1;; esac

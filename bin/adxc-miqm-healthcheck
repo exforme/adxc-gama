@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+###############################################################################
+# MQ MIQM HEALTH CHECK
+###############################################################################
+#
+# WHAT IT DOES
+# -----------------------------------------------------------------------------
+# - Verifies shared filesystem availability
+# - Displays IBM MQ version
+# - Displays current MIQM cluster status (dspmq -x)
+# - Produces a concise cluster summary
+#
+# RETURNS
+# -----------------------------------------------------------------------------
+# 0 = HEALTHY
+# 1 = WARNING
+# 2 = ERROR
+#
+###############################################################################
+
+CONF="${ADXC_MQMIQM_CONF:-/etc/mqmiqm/cluster.conf}"
+
+if [[ ! -r "$CONF" ]]; then
+    echo "ERROR: Cannot read $CONF"
+    exit 2
+fi
+
+. "$CONF"
+
+HOST=$(hostname -s 2>/dev/null || hostname 2>/dev/null || uname -n)
+
+###############################################################################
+# Must run as MQ user
+###############################################################################
+
+CURRENT_USER=$(id -un)
+
+if [[ "$CURRENT_USER" != "$MQ_USER" ]]; then
+    echo "ERROR: Please run this script as $MQ_USER"
+    exit 2
+fi
+
+###############################################################################
+# Header
+###############################################################################
+
+echo
+echo "===================================================================="
+echo "MQ MIQM HEALTH CHECK"
+echo "===================================================================="
+echo "Host              : $HOST"
+echo "Preferred Host    : $PREFERRED_HOST"
+
+###############################################################################
+# MQ Version
+###############################################################################
+
+MQ_VERSION=$(
+    dspmqver 2>/dev/null |
+    awk -F: '/^Version/ {gsub(/^[ \t]+/, "", $2); print $2}'
+)
+
+echo "MQ Version        : ${MQ_VERSION:-UNKNOWN}"
+
+###############################################################################
+# Shared Storage
+###############################################################################
+
+if findmnt -rn "$REQUIRES_MOUNTS" >/dev/null 2>&1 &&
+   timeout 5 stat "$REQUIRES_MOUNTS" >/dev/null 2>&1
+then
+    echo "Shared Storage    : OK"
+    STORAGE_OK=1
+else
+    echo "Shared Storage    : FAILED"
+    STORAGE_OK=0
+fi
+
+echo
+
+###############################################################################
+# Cluster Status
+###############################################################################
+
+DSPMQ_OUTPUT="$(dspmq -x 2>/dev/null || true)"
+
+echo "===================================================================="
+echo "CURRENT CLUSTER STATUS"
+echo "===================================================================="
+echo
+
+echo "$DSPMQ_OUTPUT"
+
+###############################################################################
+# Statistics
+###############################################################################
+
+TOTAL_QMS=$(grep -c '^QMNAME(' <<< "$DSPMQ_OUTPUT" || true)
+ACTIVE_COUNT=$(grep -c 'MODE(Active)' <<< "$DSPMQ_OUTPUT" || true)
+STANDBY_COUNT=$(grep -c 'MODE(Standby)' <<< "$DSPMQ_OUTPUT" || true)
+
+###############################################################################
+# Per-QM Standby Validation
+###############################################################################
+
+QMS_WITHOUT_STANDBY=0
+
+while read -r QM
+do
+    [[ -z "$QM" ]] && continue
+
+    if ! grep -A20 "QMNAME($QM)" <<< "$DSPMQ_OUTPUT" |
+         grep -q 'MODE(Standby)'
+    then
+        ((QMS_WITHOUT_STANDBY+=1))
+    fi
+
+done < <(
+    grep '^QMNAME(' <<< "$DSPMQ_OUTPUT" |
+    sed 's/QMNAME(//' |
+    sed 's/)$//'
+)
+
+###############################################################################
+# Failure Detection
+###############################################################################
+
+FAILURES=$(
+    grep -Eic \
+    "Ended unexpectedly|Ended immediately|Status not available|Unavailable" \
+    <<< "$DSPMQ_OUTPUT" || true
+)
+
+###############################################################################
+# Failover Readiness
+###############################################################################
+
+FAILOVER_READY="YES"
+
+if (( STORAGE_OK == 0 )); then
+    FAILOVER_READY="NO"
+fi
+
+if (( FAILURES > 0 )); then
+    FAILOVER_READY="NO"
+fi
+
+if (( QMS_WITHOUT_STANDBY > 0 )); then
+    FAILOVER_READY="NO"
+fi
+
+###############################################################################
+# Summary
+###############################################################################
+
+echo
+echo "===================================================================="
+echo "SUMMARY"
+echo "===================================================================="
+
+printf "%-18s : %s\n" "QMs" "$TOTAL_QMS"
+printf "%-18s : %s\n" "Active" "$ACTIVE_COUNT"
+printf "%-18s : %s\n" "Standby" "$STANDBY_COUNT"
+printf "%-18s : %s\n" "Failures" "$FAILURES"
+printf "%-18s : %s\n" "Failover Ready" "$FAILOVER_READY"
+
+echo
+
+###############################################################################
+# Final Status
+###############################################################################
+
+if (( STORAGE_OK == 0 )); then
+
+    echo "===================================================================="
+    echo "ERROR: CLUSTER STATUS: ERROR"
+    echo "Shared storage is unavailable."
+    echo "===================================================================="
+    exit 2
+
+elif (( FAILURES > 0 )); then
+
+    echo "===================================================================="
+    echo "ERROR: CLUSTER STATUS: ERROR"
+    echo "Queue manager failures detected."
+    echo "===================================================================="
+    exit 2
+
+elif (( QMS_WITHOUT_STANDBY > 0 )); then
+
+    echo "===================================================================="
+    echo "WARNING: CLUSTER STATUS: WARNING"
+    echo "One or more queue managers have no standby instance."
+    echo "===================================================================="
+    exit 1
+
+else
+
+    echo "===================================================================="
+    echo "OK: CLUSTER STATUS: HEALTHY"
+    echo "===================================================================="
+    exit 0
+
+fi

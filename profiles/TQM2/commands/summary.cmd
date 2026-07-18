@@ -1,5 +1,6 @@
 COMMAND_NAME="summary"
 COMMAND_TYPE="single-command"
 COMMAND_PAYLOAD="dspmq -x"
-COMMAND_DESCRIPTION="Built-in command for TQM2"
+COMMAND_DESCRIPTION="MQ MIQM command"
 COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"

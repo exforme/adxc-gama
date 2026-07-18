@@ -1,0 +1,6 @@
+COMMAND_NAME="start-node"
+COMMAND_TYPE="local-script"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control start-node TQM2"
+COMMAND_DESCRIPTION="MQ MIQM command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"

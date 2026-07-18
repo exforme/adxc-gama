@@ -1,0 +1,6 @@
+COMMAND_NAME="stop-node"
+COMMAND_TYPE="local-script"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control stop-node ${PROFILE_NAME}"
+COMMAND_DESCRIPTION="MQ MIQM control command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"

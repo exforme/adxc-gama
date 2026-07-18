@@ -1,0 +1,6 @@
+COMMAND_NAME="readiness-check"
+COMMAND_TYPE="local-script"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control readiness-check ${PROFILE_NAME}"
+COMMAND_DESCRIPTION="MQ MIQM control command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"
