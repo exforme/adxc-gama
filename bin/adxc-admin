@@ -1,31 +1,10 @@
 #!/usr/bin/env bash
-
-# Purpose:
-#   Framework administration console.
-
 ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-admin-menus.sh"
-
-adxc_load_user_config
-adxc_require_admin_role
-
-while true; do
-    adxc_admin_show_main_menu
-    printf "Select: "
-    read -r choice
-
-    case "$choice" in
-        1) adxc_admin_profile_management ;;
-        2) adxc_admin_command_management ;;
-        3) "$ADXC_HOME/admin/adxc-msg-create" ;;
-        4) adxc_print_section "USER RUNTIME MANAGEMENT"; echo "Use adxc-enable-user.sh and adxc-disable-user.sh" ;;
-        q|Q) exit 0 ;;
-        *) adxc_warn "Unknown selection: $choice" ;;
-    esac
-
-    printf "\nPress ENTER to continue..."
-    read -r _
-done
+. "$ADXC_HOME/lib/adxc-common.sh"; . "$ADXC_HOME/lib/adxc-profiles.sh"; . "$ADXC_HOME/lib/adxc-commands.sh"
+adxc_load_user_config; adxc_require_admin_role
+while true; do adxc_print_section "GAMA ADMINISTRATION"; cat <<EOF
+[1] List Profiles
+[2] List Commands
+[q] Quit
+EOF
+printf "Select: "; read -r c; case "$c" in 1) adxc_print_section "CONFIGURED PROFILES"; adxc_list_profiles_table;; 2) adxc_print_section "COMMAND REGISTRY"; adxc_list_command_registry;; q|Q) exit 0;; *) adxc_warn "Unknown selection: $c";; esac; printf "\nPress ENTER to continue..."; read -r _; done

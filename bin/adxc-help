@@ -1,49 +1,10 @@
 #!/usr/bin/env bash
-
-# Purpose:
-#   Show quick help or full command discovery.
-
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-
-adxc_load_user_config
-
-if [ "${1:-}" = "--list-all" ]; then
-    adxc_print_section "ALL AVAILABLE COMMANDS"
-    cat <<'EOF'
-Dashboard and navigation:
-  adxc
-  adxc --menu
-  adxc <profile>
-
-Help:
-  adxc-help
-  adxc-help --list-all
-
-Command registry:
-  adxc-cmd
-  adxc-cmd --list
-  adxc-cmd PROFILE/COMMAND
-
-Administration:
-  adxc-admin
-EOF
-    printf "\nCurrent command registry:\n\n"
-    adxc_list_command_registry
-    exit 0
-fi
-
-adxc_print_section "aDXC-GAMA HELP"
-cat <<'EOF'
-First-level entry points:
-
-  adxc                 Open dashboard
-  adxc --menu          Interactive profile navigation
-  adxc <profile>       Show profile commands
-  adxc-help            Show this help
-  adxc-help --list-all Show full discovery
-  adxc-cmd --list      Show command registry
-  adxc-admin           Open administration console
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"; . "$ADXC_HOME/lib/adxc-common.sh"; . "$ADXC_HOME/lib/adxc-profiles.sh"; . "$ADXC_HOME/lib/adxc-commands.sh"; adxc_load_user_config
+if [ "${1:-}" = "--list-all" ]; then adxc_print_section "ALL AVAILABLE COMMANDS"; adxc_list_command_registry; exit 0; fi
+adxc_print_section "aDXC-GAMA HELP"; cat <<EOF
+adxc                 Open dashboard
+adxc --menu          Interactive profile navigation
+adxc <profile>       Show profile actions
+adxc-cmd --list      Show command registry
+adxc-admin           Open administration console
 EOF

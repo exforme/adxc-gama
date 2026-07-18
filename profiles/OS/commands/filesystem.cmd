@@ -1,5 +1,5 @@
 COMMAND_NAME="filesystem"
 COMMAND_TYPE="single-command"
 COMMAND_PAYLOAD="df -h"
-COMMAND_DESCRIPTION="Built-in command for OS"
+COMMAND_DESCRIPTION="Built-in OS command"
 COMMAND_ENABLED="YES"

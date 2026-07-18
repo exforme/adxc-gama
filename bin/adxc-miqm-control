@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -u
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+. "$ADXC_HOME/lib/adxc-mq-miqm-control.sh"
+action="${1:-}"; profile="${2:-}"
+if [ -z "$action" ] || [ -z "$profile" ]; then
+    cat <<USAGE
+Usage:
+  adxc-miqm-control menu PROFILE
+  adxc-miqm-control cluster-status PROFILE
+  adxc-miqm-control readiness-check PROFILE
+  adxc-miqm-control start-node PROFILE
+  adxc-miqm-control stop-node PROFILE
+  adxc-miqm-control manual-failover PROFILE
+USAGE
+    exit 1
+fi
+case "$action" in
+    menu) miqm_control_menu "$profile";; cluster-status) miqm_cluster_status "$profile";; readiness-check) miqm_readiness_check "$profile";; start-node) miqm_start_node "$profile";; stop-node) miqm_stop_node "$profile";; manual-failover) miqm_manual_failover "$profile";; *) echo "ERROR: Unknown action: $action" >&2; exit 1;;
+esac

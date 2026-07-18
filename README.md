@@ -1,118 +1,68 @@
-# aDXC-GAMA 0.3.0-rc1
+# aDXC-GAMA 0.3.0-rc2
 
-## Purpose
-
-aDXC-GAMA is a DXC Operations Console and extensible operational framework.
-
-This release candidate implements the first stable draft architecture:
+Human-readable release candidate with the agreed architecture:
 
 ```text
-Template
-    Blueprint
-
-Profile
-    Operational entity created from template
-
-Command
-    Action available inside profile
-
-Custom Command
-    Additional action registered to profile
+Template  = Blueprint
+Profile   = Operational entity created from template
+Command   = Action available inside profile
+Custom Command = Additional action registered to profile
 ```
 
-## What is implemented in 0.3.0-rc1
+## Implemented
 
-### Profile Management
+- Profile Management: create/list/delete profiles.
+- Command Management: create/list/attach/delete commands.
+- Dynamic dashboard discovery from `/opt/adxc/profiles`.
+- Command registry through `adxc-cmd --list` and `adxc-cmd PROFILE/COMMAND`.
+- First profile navigation prototype with `adxc <profile>` and `adxc --menu`.
+- mq_miqm Control Menu.
+- mq_miqm Cluster Status healthcheck integrated into Control Menu -> Cluster Operations.
 
-Implemented:
+## mq_miqm Control Menu
 
 ```text
-Create Profile Wizard
-List Profiles
-Delete Profile
-Profile directory structure
+Cluster Operations
+
+[1] Cluster Status      Run MIQM healthcheck and cluster summary
+[2] Readiness Check     Validate failover readiness
+
+Node Control
+
+[3] Start Node          Start local instance with standby permitted
+[4] Stop Node           Stop only if local node is standby/passive
+[5] Manual Failover     Controlled failover from active to standby
 ```
 
-Runtime profile structure:
+`Cluster Status` calls:
 
-```text
-/opt/adxc/profiles/<PROFILE>/profile.conf
-/opt/adxc/profiles/<PROFILE>/commands/*.cmd
+```bash
+/opt/adxc/bin/adxc-miqm-healthcheck
 ```
 
-### Command Management
-
-Implemented:
+The healthcheck reads:
 
 ```text
-Create Command Wizard
-List Commands
-Attach Command To Profile
-Delete Command
-Command Registry
+/etc/mqmiqm/cluster.conf
 ```
 
-Supported command template types:
+Expected variables:
 
-```text
-single-command
-command-pipeline
-local-script
-script-package
-remote-script
-menu-wrapper
-```
-
-Remote script and menu wrapper are registered as template types, but execution is intentionally conservative in this release candidate.
-
-### Dashboard and Navigation
-
-Implemented:
-
-```text
-Dynamic Dashboard Discovery
-First Profile Navigation Prototype
-```
-
-Dashboard reads profiles from:
-
-```text
-/opt/adxc/profiles
-```
-
-Daily dashboard sections:
-
-```text
-HEADER
-MESSAGE BOARD
-PROFILES
-TOOLS
-ADMINISTRATION
+```bash
+MQ_USER=mqm
+PREFERRED_HOST=lxmqs04t
+REQUIRES_MOUNTS=/mq/mq_share/MQHA
 ```
 
 ## Install
 
-Run as root:
-
 ```bash
-tar -xzf adxc-gama-0.3.0-rc1.tar.gz
-cd adxc-gama-0.3.0-rc1
+tar -xzf adxc-gama-0.3.0-rc2.tar.gz
+cd adxc-gama-0.3.0-rc2
 ./install.sh
 ```
 
-Default installation path:
-
-```text
-/opt/adxc
-```
-
-Override path:
-
-```bash
-ADXC_INSTALL_DIR=/some/path ./install.sh
-```
-
-## Enable a user
+## Enable user
 
 ```bash
 /opt/adxc/admin/adxc-enable-user.sh monkey --role SUPPORT --force
@@ -124,33 +74,13 @@ Optional profile filter:
 /opt/adxc/admin/adxc-enable-user.sh monkey --role SUPPORT --profiles OS,TQM1,TQM2 --force
 ```
 
-If no profile filter is configured, the dashboard shows all enabled framework profiles.
-
 ## Main commands
 
 ```bash
 adxc
 adxc --menu
-adxc <profile>
-adxc-help
-adxc-help --list-all
-adxc-cmd
+adxc TQM1
 adxc-cmd --list
-adxc-cmd PROFILE/COMMAND
+adxc-cmd TQM1/cluster-status
 adxc-admin
 ```
-
-## Recommended first test
-
-```bash
-adxc-admin
-```
-
-Then validate:
-
-```text
-Profile Management
-Command Management
-```
-
-This version is intended as the first stable draft candidate before Architecture Freeze v1.

@@ -1,0 +1,6 @@
+COMMAND_NAME="control"
+COMMAND_TYPE="local-script"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control control ${PROFILE_NAME}"
+COMMAND_DESCRIPTION="MQ MIQM control command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"

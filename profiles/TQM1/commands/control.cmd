@@ -1,0 +1,6 @@
+COMMAND_NAME="control"
+COMMAND_TYPE="local-script"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control menu TQM1"
+COMMAND_DESCRIPTION="MQ MIQM command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Control"
