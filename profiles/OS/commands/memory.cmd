@@ -1,0 +1,5 @@
+COMMAND_NAME="memory"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="free -m"
+COMMAND_DESCRIPTION="Built-in command for OS"
+COMMAND_ENABLED="YES"

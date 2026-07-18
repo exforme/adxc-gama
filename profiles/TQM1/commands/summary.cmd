@@ -1,0 +1,5 @@
+COMMAND_NAME="summary"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="dspmq -x"
+COMMAND_DESCRIPTION="Built-in command for TQM1"
+COMMAND_ENABLED="YES"
