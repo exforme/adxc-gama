@@ -1,6 +1,6 @@
 COMMAND_NAME="control"
 COMMAND_TYPE="local-script"
-COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control menu ${PROFILE_NAME}"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control menu MQ_MIQM_EXAMPLE"
 COMMAND_DESCRIPTION="Open MIQM Control Menu"
 COMMAND_ENABLED="YES"
 COMMAND_MENU="Control"

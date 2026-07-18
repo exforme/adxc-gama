@@ -174,34 +174,26 @@ echo
 ###############################################################################
 
 if (( STORAGE_OK == 0 )); then
-
     echo "===================================================================="
     echo "ERROR: CLUSTER STATUS: ERROR"
     echo "Shared storage is unavailable."
     echo "===================================================================="
     exit 2
-
 elif (( FAILURES > 0 )); then
-
     echo "===================================================================="
     echo "ERROR: CLUSTER STATUS: ERROR"
     echo "Queue manager failures detected."
     echo "===================================================================="
     exit 2
-
 elif (( QMS_WITHOUT_STANDBY > 0 )); then
-
     echo "===================================================================="
     echo "WARNING: CLUSTER STATUS: WARNING"
     echo "One or more queue managers have no standby instance."
     echo "===================================================================="
     exit 1
-
 else
-
     echo "===================================================================="
     echo "OK: CLUSTER STATUS: HEALTHY"
     echo "===================================================================="
     exit 0
-
 fi

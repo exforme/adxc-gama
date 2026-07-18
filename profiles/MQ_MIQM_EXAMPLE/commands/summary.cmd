@@ -1,0 +1,7 @@
+COMMAND_NAME="summary"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="echo MQ MIQM example profile. Create a real profile from template mq_miqm."
+COMMAND_DESCRIPTION="Explain this blank example profile"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Custom Commands"
+COMMAND_GROUP="Examples"

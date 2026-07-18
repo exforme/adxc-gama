@@ -1,0 +1,7 @@
+COMMAND_NAME="logs"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="echo Replace this command with product-specific log location."
+COMMAND_DESCRIPTION="Placeholder log location command"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Troubleshooting"
+COMMAND_GROUP="Logs"

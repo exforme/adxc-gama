@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"; . "$ADXC_HOME/lib/adxc-message-board.sh"; . "$ADXC_HOME/lib/adxc-commands.sh"; . "$ADXC_HOME/lib/adxc-profiles.sh"; . "$ADXC_HOME/lib/adxc-dashboard.sh"
+. "$ADXC_HOME/lib/adxc-common.sh"
+. "$ADXC_HOME/lib/adxc-message-board.sh"
+. "$ADXC_HOME/lib/adxc-commands.sh"
+. "$ADXC_HOME/lib/adxc-profiles.sh"
+. "$ADXC_HOME/lib/adxc-dashboard.sh"
 adxc_load_user_config
-case "${1:-}" in --menu) adxc_interactive_profile_menu;; "") adxc_render_dashboard;; *) adxc_profile_exists "$1" && adxc_profile_menu "$1" || { adxc_error "Profile not found: $1"; exit 1; };; esac
+case "${1:-}" in
+    --menu) adxc_interactive_profile_menu ;;
+    "") adxc_render_dashboard ;;
+    *) adxc_profile_exists "$1" && adxc_profile_menu "$1" || { adxc_error "Profile not found: $1"; exit 1; } ;;
+esac

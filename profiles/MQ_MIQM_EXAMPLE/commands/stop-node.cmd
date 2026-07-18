@@ -1,6 +1,6 @@
 COMMAND_NAME="stop-node"
 COMMAND_TYPE="local-script"
-COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control stop-node ${PROFILE_NAME}"
+COMMAND_PAYLOAD="/opt/adxc/bin/adxc-miqm-control stop-node MQ_MIQM_EXAMPLE"
 COMMAND_DESCRIPTION="Stop only if local node is standby/passive"
 COMMAND_ENABLED="YES"
 COMMAND_MENU="Control"

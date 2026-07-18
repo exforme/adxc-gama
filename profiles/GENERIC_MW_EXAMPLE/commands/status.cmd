@@ -1,0 +1,7 @@
+COMMAND_NAME="status"
+COMMAND_TYPE="single-command"
+COMMAND_PAYLOAD="echo Replace this command with product-specific status check."
+COMMAND_DESCRIPTION="Placeholder product status check"
+COMMAND_ENABLED="YES"
+COMMAND_MENU="Checks"
+COMMAND_GROUP="Runtime Status"

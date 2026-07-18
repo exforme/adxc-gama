@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"; . "$ADXC_HOME/lib/adxc-common.sh"; . "$ADXC_HOME/lib/adxc-profiles.sh"; . "$ADXC_HOME/lib/adxc-commands.sh"; adxc_load_user_config
-if [ "${1:-}" = "--list-all" ]; then adxc_print_section "ALL AVAILABLE COMMANDS"; adxc_list_command_registry; exit 0; fi
-adxc_print_section "aDXC-GAMA HELP"; cat <<EOF
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+. "$ADXC_HOME/lib/adxc-common.sh"
+. "$ADXC_HOME/lib/adxc-profiles.sh"
+. "$ADXC_HOME/lib/adxc-commands.sh"
+adxc_load_user_config
+if [ "${1:-}" = "--list-all" ]; then
+    adxc_print_section "ALL AVAILABLE COMMANDS"
+    adxc_list_command_registry
+    exit 0
+fi
+adxc_print_section "aDXC-GAMA HELP"
+cat <<EOF
 adxc                 Open dashboard
 adxc --menu          Interactive profile navigation
 adxc <profile>       Show profile actions
