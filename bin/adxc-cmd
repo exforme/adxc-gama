@@ -1,7 +1,154 @@
 #!/usr/bin/env bash
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}; . "$ADXC_HOME/lib/adxc-common.sh"; adxc_load_user_config; run=${1:-}
-list_global(){ found=0; for f in "$ADXC_HOME/commands/global"/*; do [ -x "$f" ] || continue; found=1; b=$(basename "$f"); desc=$(grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC:[ ]*//'); printf '%-20b %s\n' "${ADXC_GREEN}$b${ADXC_RESET}" "${desc:-Custom command}"; done; [ "$found" -eq 1 ] || echo "No global custom commands found."; }
-list_profile(){ p="$1"; d="$ADXC_HOME/profiles/$p/commands"; [ -d "$d" ] || return; for f in "$d"/*; do [ -x "$f" ] || continue; b=$(basename "$f"); desc=$(grep -m1 '^# DESC:' "$f" 2>/dev/null | sed 's/^# DESC:[ ]*//'); printf '%-20b %s\n' "${ADXC_GREEN}$p/$b${ADXC_RESET}" "${desc:-Profile command}"; done; }
-if [ -z "$run" ] || [ "$run" = list ]; then adxc_title "CUSTOM COMMANDS"; adxc_section GLOBAL; list_global; adxc_section "PROFILE COMMANDS"; for pdir in "$ADXC_HOME/profiles"/*; do [ -d "$pdir" ] || continue; p=$(basename "$pdir"); adxc_profile_allowed "$p" && list_profile "$p"; done; adxc_line; exit 0; fi
-case "$run" in */*) prof=${run%%/*}; cmd=${run#*/}; adxc_profile_allowed "$prof" || { adxc_error "Profile exists but is not assigned to this user: $prof"; exit 1; }; target="$ADXC_HOME/profiles/$prof/commands/$cmd";; *) target="$ADXC_HOME/commands/global/$run";; esac
-[ -x "$target" ] || { adxc_error "Command not found or not executable: $run"; exit 1; }; shift || true; exec "$target" "$@"
+
+###############################################################################
+# aDXC-GAMA Custom Command Dispatcher
+###############################################################################
+
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+
+. "$ADXC_HOME/lib/adxc-common.sh"
+
+adxc_load_user_config
+
+RUN_COMMAND="${1:-}"
+
+###############################################################################
+# List Global Commands
+###############################################################################
+
+list_global()
+{
+    local found=0
+
+    for file in "$ADXC_HOME/commands/global"/*
+    do
+        [ -x "$file" ] || continue
+
+        found=1
+
+        command_name="$(basename "$file")"
+
+        description="$(
+            grep -m1 '^# DESC:' "$file" 2>/dev/null |
+            sed 's/^# DESC:[ ]*//'
+        )"
+
+        printf \
+            '%-20b %s\n' \
+            "${ADXC_GREEN}${command_name}${ADXC_RESET}" \
+            "${description:-Custom command}"
+    done
+
+    if [ "$found" -ne 1 ]
+    then
+        echo "No global custom commands found."
+    fi
+}
+
+###############################################################################
+# List Profile Commands
+###############################################################################
+
+list_profile()
+{
+    local profile="$1"
+    local command_dir
+    local file
+    local command_name
+    local description
+
+    command_dir="$ADXC_HOME/profiles/$profile/commands"
+
+    [ -d "$command_dir" ] || return
+
+    for file in "$command_dir"/*
+    do
+        [ -x "$file" ] || continue
+
+        command_name="$(basename "$file")"
+
+        description="$(
+            grep -m1 '^# DESC:' "$file" 2>/dev/null |
+            sed 's/^# DESC:[ ]*//'
+        )"
+
+        printf \
+            '%-20b %s\n' \
+            "${ADXC_GREEN}${profile}/${command_name}${ADXC_RESET}" \
+            "${description:-Profile command}"
+    done
+}
+
+###############################################################################
+# List Mode
+###############################################################################
+
+if [ -z "$RUN_COMMAND" ] || [ "$RUN_COMMAND" = "list" ]
+then
+    adxc_title "CUSTOM COMMANDS"
+
+    adxc_section "GLOBAL"
+
+    list_global
+
+    adxc_section "PROFILE COMMANDS"
+
+    for profile_dir in "$ADXC_HOME/profiles"/*
+    do
+        [ -d "$profile_dir" ] || continue
+
+        profile_name="$(basename "$profile_dir")"
+
+        if adxc_profile_allowed "$profile_name"
+        then
+            list_profile "$profile_name"
+        fi
+    done
+
+    adxc_line
+
+    exit 0
+fi
+
+###############################################################################
+# Resolve Command Target
+###############################################################################
+
+case "$RUN_COMMAND" in
+
+    */*)
+
+        PROFILE="${RUN_COMMAND%%/*}"
+        COMMAND="${RUN_COMMAND#*/}"
+
+        if ! adxc_profile_allowed "$PROFILE"
+        then
+            adxc_error \
+                "Profile exists but is not assigned to this user: $PROFILE"
+            exit 1
+        fi
+
+        TARGET="$ADXC_HOME/profiles/$PROFILE/commands/$COMMAND"
+        ;;
+
+    *)
+
+        TARGET="$ADXC_HOME/commands/global/$RUN_COMMAND"
+        ;;
+
+esac
+
+###############################################################################
+# Execute Command
+###############################################################################
+
+if [ ! -x "$TARGET" ]
+then
+    adxc_error \
+        "Command not found or not executable: $RUN_COMMAND"
+    exit 1
+fi
+
+shift || true
+
+exec "$TARGET" "$@"
