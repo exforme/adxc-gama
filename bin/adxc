@@ -1,16 +1,109 @@
 #!/usr/bin/env bash
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+
+###############################################################################
+# aDXC-GAMA Dashboard
+###############################################################################
+
+ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
+
 . "$ADXC_HOME/lib/adxc-common.sh"
+
 adxc_load_user_config
+
+###############################################################################
+# Header Information
+###############################################################################
+
+VERSION="$(adxc_version)"
+
+HOST="$(
+    hostname 2>/dev/null \
+    || uname -n 2>/dev/null \
+    || cat /proc/sys/kernel/hostname 2>/dev/null \
+    || echo unknown
+)"
+
+USER_NAME="$(id -un)"
+
+###############################################################################
+# Dashboard Header
+###############################################################################
+
 adxc_title "aDXC-GAMA"
-ver=$(adxc_version); host=$(hostname 2>/dev/null || uname -n 2>/dev/null || cat /proc/sys/kernel/hostname 2>/dev/null || echo unknown); user=$(id -un)
-printf ' %b[%s]%b %s@%s%*s%s\n\n' "$ADXC_GREEN" "${ADXC_ROLE^^}" "$ADXC_RESET" "$user" "$host" 20 "" "v$ver"
+
+printf \
+    ' %b[%s]%b %s@%s%*s%s\n\n' \
+    "$ADXC_GREEN" \
+    "${ADXC_ROLE^^}" \
+    "$ADXC_RESET" \
+    "$USER_NAME" \
+    "$HOST" \
+    20 \
+    "" \
+    "v$VERSION"
+
+###############################################################################
+# Message Board
+###############################################################################
+
 adxc_render_message_board
+
+###############################################################################
+# Operational Objects
+###############################################################################
+
 adxc_section "OPERATIONAL OBJECTS"
+
 adxc_list_profiles_compact
+
+###############################################################################
+# Tools
+###############################################################################
+
 adxc_section "TOOLS"
-printf ' [C]  %-14b %s\n\n' "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" "Custom Commands"
-printf ' [P]  %-14b %s\n\n' "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" "Profile Inventory"
-printf ' [H]  %-14b %s\n' "${ADXC_GREEN}adxc-help${ADXC_RESET}" "Help and command inventory"
-case "$ADXC_ROLE" in admin|ADMIN|root) adxc_section "ADMINISTRATION"; printf ' [A]  %-14b %s\n' "${ADXC_GREEN}adxc-admin${ADXC_RESET}" "Framework Administration";; *) adxc_section "ADMINISTRATION"; printf '%b\n' "${ADXC_DIM} Not Available${ADXC_RESET}";; esac
+
+printf \
+    ' [C]  %-14b %s\n\n' \
+    "${ADXC_GREEN}adxc-cmd${ADXC_RESET}" \
+    "Custom Commands"
+
+printf \
+    ' [P]  %-14b %s\n\n' \
+    "${ADXC_GREEN}adxc-profiles${ADXC_RESET}" \
+    "Profile Inventory"
+
+printf \
+    ' [H]  %-14b %s\n' \
+    "${ADXC_GREEN}adxc-help${ADXC_RESET}" \
+    "Help and Command Inventory"
+
+###############################################################################
+# Administration
+###############################################################################
+
+adxc_section "ADMINISTRATION"
+
+case "${ADXC_ROLE,,}" in
+
+    admin|root)
+
+        printf \
+            ' [A]  %-14b %s\n' \
+            "${ADXC_GREEN}adxc-admin${ADXC_RESET}" \
+            "Framework Administration"
+        ;;
+
+    *)
+
+        printf \
+            '%b\n' \
+            "${ADXC_DIM}Restricted${ADXC_RESET}"
+        ;;
+
+esac
+
+###############################################################################
+# Footer
+###############################################################################
+
 adxc_line
