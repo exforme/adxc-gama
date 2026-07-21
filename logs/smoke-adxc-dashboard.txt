@@ -1,0 +1,21 @@
+================================================================
+DXC OPERATIONS CONSOLE
+================================================================
+Version: 0.3.0-rc5
+
+PROFILES
+
+[1] GENERIC_MW             GENERIC_MW_EXAMPLE
+[2] MIQM                   MQ_MIQM_EXAMPLE
+[3] STANDALONE             MQ_STANDALONE_EXAMPLE
+
+TOOLS
+
+  adxc-help
+  adxc-os
+  adxc-cmd --list
+  adxc <profile>
+
+ADMINISTRATION
+
+  adxc-admin

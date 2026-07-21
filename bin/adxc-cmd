@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-adxc_load_user_config
-case "${1:-}" in
-    ""|--list) adxc_print_section "COMMAND REGISTRY"; adxc_list_command_registry ;;
-    */*) adxc_execute_command "$1" ;;
-    *) adxc_error "Use adxc-cmd --list or adxc-cmd PROFILE/COMMAND"; exit 1 ;;
-esac
+# -----------------------------------------------------------------------------
+# aDXC-GAMA command registry viewer
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+if [[ "${1:-}" != "--list" ]]; then
+    printf 'Usage: adxc-cmd --list\n'
+    exit 0
+fi
+
+printf 'GLOBAL COMMANDS\n'
+find "${ADXC_ROOT_DIR}/commands/global" -mindepth 1 -maxdepth 1 -type f -printf '  %f\n' | sort
+printf '\nPROFILE COMMANDS\n'
+find "${ADXC_ROOT_DIR}/profiles" -path '*/commands/*' -type f ! -name 'README.md' -printf '  %P\n' | sort

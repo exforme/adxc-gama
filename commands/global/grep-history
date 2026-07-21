@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-# DESC: Search shell history placeholder
-# ============================================================================== 
-
-pattern="${1:-}"
-
-if [ -z "$pattern" ]; then
-    echo "Usage: grep-history <pattern>"
+# Search current user shell history.
+set -euo pipefail
+PATTERN="${1:-}"
+if [[ -z "${PATTERN}" ]]; then
+    printf 'Usage: grep-history <pattern>\n'
     exit 1
 fi
-
-grep -i -- "$pattern" "$HOME/.bash_history" 2>/dev/null || true
+grep -i -- "${PATTERN}" "${HOME}/.bash_history" 2>/dev/null || true

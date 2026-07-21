@@ -1,35 +1,11 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# adxc-os - basic Linux health checks and diagnostics
-# ==============================================================================
-# Current scope:
-#   - hostname
-#   - kernel
-#   - uptime
-#   - filesystems above threshold
-#   - NFS mounts
-#
-# Tip:
-#   This is intentionally simple. Production checks can be expanded later.
-# ============================================================================== 
+# -----------------------------------------------------------------------------
+# aDXC-GAMA OS diagnostics placeholder
+# -----------------------------------------------------------------------------
 
-ADXC_HOME=${ADXC_HOME:-/opt/adxc}
+set -euo pipefail
 
-# shellcheck source=/dev/null
-. "$ADXC_HOME/lib/adxc-common.sh"
-
-adxc_load_user_config
-
-adxc_title "OS - Linux health checks and diagnostics"
-
-printf '%-18s : %s\n' "Hostname" "$(adxc_hostname)"
-printf '%-18s : %s\n' "Kernel" "$(uname -r)"
-printf '%-18s : %s\n' "Uptime" "$(uptime -p 2>/dev/null || uptime)"
-
-adxc_section "FILESYSTEMS >= 80%"
-df -hP | awk 'NR == 1 || $5 + 0 >= 80 { print }'
-
-adxc_section "NFS MOUNTS"
-mount | grep -i nfs || echo "No NFS mounts found"
-
-adxc_line
+printf 'OS Linux health checks and diagnostics\n'
+printf 'Hostname : %s\n' "$(hostname 2>/dev/null || printf unknown)"
+printf 'Kernel   : %s\n' "$(uname -r 2>/dev/null || printf unknown)"
+printf 'Uptime   : %s\n' "$(uptime 2>/dev/null || printf unknown)"

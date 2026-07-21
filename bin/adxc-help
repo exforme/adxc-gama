@@ -1,19 +1,23 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-adxc_load_user_config
-if [ "${1:-}" = "--list-all" ]; then
-    adxc_print_section "ALL AVAILABLE COMMANDS"
-    adxc_list_command_registry
-    exit 0
-fi
-adxc_print_section "aDXC-GAMA HELP"
-cat <<EOF
-adxc                 Open dashboard
-adxc --menu          Interactive profile navigation
-adxc <profile>       Show profile actions
-adxc-cmd --list      Show command registry
-adxc-admin           Open administration console
-EOF
+# -----------------------------------------------------------------------------
+# aDXC-GAMA help command
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# shellcheck source=../lib/adxc-common.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
+
+adxc_print_header "aDXC-GAMA HELP"
+printf 'Operations:\n'
+printf '  adxc                  Show operations dashboard\n'
+printf '  adxc <profile>        Open profile home screen\n'
+printf '  adxc-os               Show basic OS diagnostics\n'
+printf '  adxc-cmd --list       List global and profile commands\n\n'
+printf 'Administration:\n'
+printf '  adxc-admin            Open administration console\n'
+printf '  admin/adxc-enable-user.sh <user>\n'
+printf '  admin/adxc-disable-user.sh <user>\n'

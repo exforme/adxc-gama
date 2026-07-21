@@ -1,21 +1,78 @@
-# aDXC-GAMA 0.3.0-rc3
+# aDXC-GAMA 0.3.0-rc5
 
-Human-readable GAMA release candidate.
+Profile-Based Operations Framework + Administration Console + Middleware Automation Platform.
 
-## Architecture
+## What this release fixes
+
+This package restores the complete package skeleton from the earlier GAMA baseline and adds the Priority 1 Profile Management implementation.
+
+## Included top-level structure
 
 ```text
-Template       = Blueprint
-Profile        = Operational entity created from template
-Command        = Action available inside profile
-Custom Command = Additional action registered to profile
+bin/
+admin/
+lib/
+etc/
+commands/global/
+profiles/
+archive/profiles/
+templates/
+docs/
+optional/
+assets/logo/
+test/
+package/
+install.sh
+uninstall.sh
+VERSION
+README.md
+MANIFEST.md
+PACKAGE_TREE.txt
+CHANGELOG.md
 ```
 
-## Fresh install profile model
+## Priority 1: Profile Management
 
-This package does **not** ship fake real operational profiles such as `TQM1` or `TQM2`.
+Implemented under:
 
-Fresh installation contains blank example profiles only:
+```text
+adxc-admin
+```
+
+Menu:
+
+```text
+Profile Management
+
+[1] Create Profile
+[2] List Profiles
+[3] Delete Profile
+[4] Restore Archived Profile
+```
+
+## Profile Identity Model
+
+Profiles keep their real operational name:
+
+```bash
+PROFILE_NAME="TQM1"
+```
+
+The profile type is carried by metadata:
+
+```bash
+PROFILE_CLASS="MIQM"
+PROFILE_TEMPLATE="mq_miqm"
+```
+
+Dashboard display:
+
+```text
+[1] MIQM                    TQM1
+[2] STANDALONE              TQM11
+```
+
+## Fresh Install Profiles
 
 ```text
 profiles/
@@ -24,72 +81,33 @@ profiles/
 └── GENERIC_MW_EXAMPLE
 ```
 
-These demonstrate profile layout and reusable menu implementation without implying real customer queue managers exist.
-
-Real operational profiles are generated from templates later:
-
-```text
-mq_miqm            -> TQM1, TQM2, TQM7
-mq_standalone      -> QM1, QM2
-generic_middleware -> ORACLE01, WEBSPHERE01, KAFKA01
-```
-
-## mq_miqm Control Menu
-
-```text
-Cluster Operations
-
-[1] Cluster Status      Run MIQM healthcheck and cluster summary
-[2] Readiness Check     Validate failover readiness
-
-Node Control
-
-[3] Start Node          Start local instance with standby permitted
-[4] Stop Node           Stop only if local node is standby/passive
-[5] Manual Failover     Controlled failover from active to standby
-```
-
-`Cluster Status` calls:
-
-```bash
-/opt/adxc/bin/adxc-miqm-healthcheck
-```
-
-The healthcheck reads:
-
-```text
-/etc/mqmiqm/cluster.conf
-```
-
-Expected variables:
-
-```bash
-MQ_USER=mqm
-PREFERRED_HOST=lxmqs04t
-REQUIRES_MOUNTS=/mq/mq_share/MQHA
-```
+Real customer profiles are created from templates through the Profile Wizard.
 
 ## Install
 
 ```bash
-tar -xzf adxc-gama-0.3.0-rc3.tar.gz
-cd adxc-gama-0.3.0-rc3
-./install.sh
+tar -xzf aDXC-GAMA-0.3.0-rc5.tar.gz
+cd aDXC-GAMA-0.3.0-rc5
+./install.sh /opt/adxc-gama
 ```
 
-## Enable user
+Optional root activation:
 
 ```bash
-/opt/adxc/admin/adxc-enable-user.sh monkey --role SUPPORT --force
+./install.sh /opt/adxc-gama --activate-root
+source /root/.adxc/activate.sh
 ```
 
-## Main commands
+## Uninstall
+
+Remove command symlinks but keep installed files:
 
 ```bash
-adxc
-adxc --menu
-adxc MQ_MIQM_EXAMPLE
-adxc-cmd --list
-adxc-cmd MQ_MIQM_EXAMPLE/control
-adxc-admin
+./uninstall.sh
+```
+
+Remove symlinks and installed framework directory:
+
+```bash
+./uninstall.sh --remove-install-dir
 ```

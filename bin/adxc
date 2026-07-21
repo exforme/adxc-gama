@@ -1,13 +1,83 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-message-board.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-dashboard.sh"
-adxc_load_user_config
-case "${1:-}" in
-    --menu) adxc_interactive_profile_menu ;;
-    "") adxc_render_dashboard ;;
-    *) adxc_profile_exists "$1" && adxc_profile_menu "$1" || { adxc_error "Profile not found: $1"; exit 1; } ;;
-esac
+# -----------------------------------------------------------------------------
+# aDXC-GAMA Operations Console
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# shellcheck source=../lib/adxc-common.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
+
+adxc_show_dashboard() {
+    clear 2>/dev/null || true
+    adxc_print_header "DXC OPERATIONS CONSOLE"
+    printf 'Version: %s\n\n' "${ADXC_VERSION}"
+    printf 'PROFILES\n\n'
+    adxc_show_profile_selector
+    printf '\nTOOLS\n\n'
+    printf '  adxc-help\n'
+    printf '  adxc-os\n'
+    printf '  adxc-cmd --list\n'
+    printf '  adxc <profile>\n'
+    printf '\nADMINISTRATION\n\n'
+    printf '  adxc-admin\n'
+}
+
+adxc_show_profile_selector() {
+    local profile_dirs=()
+    local profile_dir
+    local index=1
+
+    mapfile -t profile_dirs < <(find "${ADXC_PROFILES_DIR}" -mindepth 1 -maxdepth 1 -type d | sort)
+
+    if [[ "${#profile_dirs[@]}" -eq 0 ]]; then
+        printf 'No profiles configured. Use adxc-admin to create a profile.\n'
+        return 0
+    fi
+
+    for profile_dir in "${profile_dirs[@]}"; do
+        adxc_load_profile_config "${profile_dir}"
+        [[ "${PROFILE_ENABLED}" == "YES" ]] || continue
+        printf '[%d] %-22s %s\n' "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}"
+        index=$((index + 1))
+    done
+}
+
+adxc_show_profile_home() {
+    local requested_profile="$1"
+    local profile_dir="${ADXC_PROFILES_DIR}/${requested_profile}"
+
+    if [[ ! -d "${profile_dir}" ]]; then
+        adxc_print_error "Profile not found: ${requested_profile}"
+        exit 1
+    fi
+
+    adxc_load_profile_config "${profile_dir}"
+
+    if [[ "${PROFILE_ENABLED}" != "YES" ]]; then
+        adxc_print_error "Profile is not enabled: ${requested_profile}"
+        exit 1
+    fi
+
+    clear 2>/dev/null || true
+    adxc_print_header "PROFILE : ${PROFILE_NAME}"
+    printf '%-14s : %s\n' 'Class' "${PROFILE_CLASS}"
+    printf '%-14s : %s\n' 'Template' "${PROFILE_TEMPLATE}"
+    printf '%-14s : %s\n' 'Status' "${PROFILE_STATUS}"
+    printf '%-14s : %s\n' 'Description' "${PROFILE_DESCRIPTION}"
+    printf '\nSTANDARD MENUS\n\n'
+    printf '[1] Control\n'
+    printf '[2] Troubleshooting\n'
+    printf '[3] Checks\n'
+    printf '[4] Maintenance\n'
+    printf '[5] Custom Commands\n'
+}
+
+if [[ "${#}" -eq 0 ]]; then
+    adxc_show_dashboard
+else
+    adxc_show_profile_home "$1"
+fi

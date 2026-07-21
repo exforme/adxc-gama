@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# DESC: Validate basic host/network connectivity placeholder
-# ==============================================================================
-# Placeholder custom command.
-# Replace this logic with customer-specific connectivity checks.
-# ============================================================================== 
-
-echo "check-conn: placeholder command. Customize for customer connectivity checks."
+# Simple connectivity helper placeholder.
+set -euo pipefail
+TARGET="${1:-localhost}"
+printf 'Checking basic connectivity to %s\n' "${TARGET}"
+ping -c 1 "${TARGET}" >/dev/null 2>&1 && printf 'OK\n' || printf 'FAILED\n'

@@ -1,25 +1,38 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-. "$ADXC_HOME/lib/adxc-common.sh"
-. "$ADXC_HOME/lib/adxc-profiles.sh"
-. "$ADXC_HOME/lib/adxc-commands.sh"
-adxc_load_user_config
-adxc_require_admin_role
-while true; do
-    adxc_print_section "GAMA ADMINISTRATION"
-    cat <<EOF
-[1] List Profiles
-[2] List Commands
-[q] Quit
-EOF
-    printf "Select: "
-    read -r choice
-    case "$choice" in
-        1) adxc_print_section "CONFIGURED PROFILES"; adxc_list_profiles_table ;;
-        2) adxc_print_section "COMMAND REGISTRY"; adxc_list_command_registry ;;
-        q|Q) exit 0 ;;
-        *) adxc_warn "Unknown selection: $choice" ;;
-    esac
-    printf "\nPress ENTER to continue..."
-    read -r _
-done
+# -----------------------------------------------------------------------------
+# aDXC-GAMA Administration Console
+# -----------------------------------------------------------------------------
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# shellcheck source=../lib/adxc-common.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
+
+# shellcheck source=../lib/adxc-profile-management.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-profile-management.sh"
+
+adxc_admin_main_menu() {
+    while true; do
+        clear 2>/dev/null || true
+        adxc_print_header "aDXC-GAMA ADMINISTRATION CONSOLE"
+        printf 'Version: %s\n\n' "${ADXC_VERSION}"
+        printf '[1] Profile Management\n'
+        printf '[2] Command Management   %bplanned%b\n' "${ADXC_GRAY}" "${ADXC_RESET}"
+        printf '[3] User Enablement      %badmin scripts%b\n' "${ADXC_GRAY}" "${ADXC_RESET}"
+        printf '[0] Exit\n'
+        printf '\nSelect option: '
+        read -r selected_option || exit 0
+        case "${selected_option}" in
+            1) adxc_profile_management_menu ;;
+            2) adxc_print_warning "Command Management is planned for Priority 2."; adxc_pause ;;
+            3) adxc_print_warning "Use admin/adxc-enable-user.sh and admin/adxc-disable-user.sh."; adxc_pause ;;
+            0) exit 0 ;;
+            *) adxc_print_warning "Invalid option selected."; adxc_pause ;;
+        esac
+    done
+}
+
+adxc_admin_main_menu
