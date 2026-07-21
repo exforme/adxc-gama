@@ -1,3 +1,3 @@
 # Global Scripts
 
-Reusable scripts that can be referenced by command objects.
+Reusable scripts referenced by external-script command objects.

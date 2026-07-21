@@ -2,6 +2,8 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA Operations Console
 # -----------------------------------------------------------------------------
+# This is the operator-facing entry point.
+
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -12,11 +14,14 @@ adxc_show_profile_selector() {
     local profile_dirs=()
     local profile_dir
     local index=1
+
     mapfile -t profile_dirs < <(find "${ADXC_PROFILES_DIR}" -mindepth 1 -maxdepth 1 -type d | sort)
+
     if [[ "${#profile_dirs[@]}" -eq 0 ]]; then
         printf 'No profiles configured. Use adxc-admin to create a profile.\n'
         return 0
     fi
+
     for profile_dir in "${profile_dirs[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         [[ "${PROFILE_ENABLED}" == "YES" ]] || continue
@@ -29,22 +34,21 @@ adxc_show_attached_commands() {
     local profile_dir="$1"
     local link_files=()
     local link_file
-    local command_name=""
-    local command_file=""
     local index=1
+
     mapfile -t link_files < <(find "${profile_dir}/commands" -mindepth 1 -maxdepth 1 -type f -name '*.link' 2>/dev/null | sort)
+
     if [[ "${#link_files[@]}" -eq 0 ]]; then
         printf 'No commands attached. Use adxc-admin -> Command Management -> Attach Command.\n'
         return 0
     fi
+
     for link_file in "${link_files[@]}"; do
         COMMAND_NAME=""
         COMMAND_FILE=""
         # shellcheck source=/dev/null
         source "${link_file}"
-        command_name="${COMMAND_NAME:-$(basename "${link_file}" .link)}"
-        command_file="${COMMAND_FILE:-commands/${command_name}.cmd}"
-        printf '[%d] %-24s %s\n' "${index}" "${command_name}" "${command_file}"
+        printf '[%d] %-24s %s\n' "${index}" "${COMMAND_NAME}" "${COMMAND_FILE}"
         index=$((index + 1))
     done
 }
@@ -69,15 +73,19 @@ adxc_show_dashboard() {
 adxc_show_profile_home() {
     local requested_profile="$1"
     local profile_dir="${ADXC_PROFILES_DIR}/${requested_profile}"
+
     if [[ ! -d "${profile_dir}" ]]; then
         adxc_print_error "Profile not found: ${requested_profile}"
         exit 1
     fi
+
     adxc_load_profile_config "${profile_dir}"
+
     if [[ "${PROFILE_ENABLED}" != "YES" ]]; then
         adxc_print_error "Profile is not enabled: ${requested_profile}"
         exit 1
     fi
+
     clear 2>/dev/null || true
     adxc_print_header "PROFILE : ${PROFILE_NAME}"
     printf '%-14s : %s\n' 'Class' "${PROFILE_CLASS}"

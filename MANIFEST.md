@@ -1,4 +1,4 @@
-# aDXC-GAMA 0.3.0-rc6 Manifest
+# aDXC-GAMA 0.3.0-rc7 Manifest
 
 ## Executables
 
@@ -44,3 +44,4 @@
 - Priority 1: Profile Management
 - Priority 2: Command Management
 - Priority 3: Profile Directory Structure Standardization
+- Priority 4: Installer and User Enablement Hardening

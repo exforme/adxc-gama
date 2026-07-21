@@ -1,14 +1,53 @@
-# aDXC-GAMA 0.3.0-rc6
+# aDXC-GAMA 0.3.0-rc7
 
 Profile-Based Operations Framework + Administration Console + Middleware Automation Platform.
 
 ## Release focus
 
-This release combines the approved Priority 1, Priority 2 and Priority 3 architecture decisions into a near-demo-ready package.
+This release keeps the locked Priority 1, 2 and 3 architecture and adds Priority 4 installer and user enablement hardening.
+
+## Priority 4: Installer and User Enablement Hardening
+
+`install.sh` now performs:
+
+```text
+root validation
+source tree validation
+existing /opt/adxc backup
+copy to /opt/adxc
+chown -R root:root /opt/adxc
+directory chmod 0755
+regular file chmod 0644
+executable chmod 0755
+shell syntax checks
+informative installation summary
+```
+
+The standard install location is:
+
+```text
+/opt/adxc
+```
+
+## Force user activation
+
+The user enablement script supports:
+
+```bash
+/opt/adxc/admin/adxc-enable-user.sh --force mqm
+```
+
+Force mode updates the user's `.bashrc` and activates aDXC on login. The user sees an `aDXC ACTIVE` notification banner at every interactive shell startup.
+
+## Normal user activation
+
+```bash
+/opt/adxc/admin/adxc-enable-user.sh mqm
+source ~/.adxc/activate.sh
+adxc
+```
 
 ## Priority 1: Profile Management
-
-Implemented under `adxc-admin`:
 
 ```text
 [1] Create Profile
@@ -17,16 +56,7 @@ Implemented under `adxc-admin`:
 [4] Restore Archived Profile
 ```
 
-Profiles are displayed as `PROFILE_CLASS + PROFILE_NAME`, for example:
-
-```text
-MIQM                    TQM1
-STANDALONE              TQM11
-```
-
 ## Priority 2: Command Management
-
-Implemented under `adxc-admin`:
 
 ```text
 [1] Create Command
@@ -36,18 +66,14 @@ Implemented under `adxc-admin`:
 [5] Restore Retired Command
 ```
 
-Supported command types:
+Command types:
 
 ```text
-single-command      One shell command with parameters, for example dspmq -x
-external-script     Existing script from scripts/, profiles/<PROFILE>/scripts/, or an absolute path
+single-command
+external-script
 ```
 
-Command metadata is stored inside the command file itself.
-
 ## Priority 3: Profile Directory Structure
-
-Locked profile structure:
 
 ```text
 profiles/<PROFILE>/
@@ -57,43 +83,12 @@ profiles/<PROFILE>/
 └── logs/
 ```
 
-Removed from profile structure:
-
-```text
-menus/
-cache/
-```
-
-## Script model
-
-Profiles can use both:
-
-```text
-scripts/                         global reusable scripts
-profiles/<PROFILE>/scripts/      profile-local scripts
-```
+No profile `menus/` and no profile `cache/` directories.
 
 ## Demo commands
-
-`MQ_MIQM_EXAMPLE` has two attached demo commands:
-
-```text
-cluster-status
-demo-global-healthcheck
-```
-
-Run examples:
 
 ```bash
 ./bin/adxc-cmd --profile MQ_MIQM_EXAMPLE
 ./bin/adxc-cmd --run MQ_MIQM_EXAMPLE cluster-status
 ./bin/adxc-cmd --run MQ_MIQM_EXAMPLE demo-global-healthcheck
-```
-
-## Install
-
-```bash
-tar -xzf aDXC-GAMA-0.3.0-rc6.tar.gz
-cd aDXC-GAMA-0.3.0-rc6
-./install.sh /opt/adxc-gama
 ```
