@@ -1,42 +1,121 @@
 #!/usr/bin/env bash
-ADXC_HOME="${ADXC_HOME:-/opt/adxc}"
-[ -f "$ADXC_HOME/lib/adxc-colors.sh" ] && . "$ADXC_HOME/lib/adxc-colors.sh"
+# -----------------------------------------------------------------------------
+# aDXC-GAMA common runtime library
+# -----------------------------------------------------------------------------
+# Shared helper functions for paths, output, profile metadata and template data.
 
-adxc_version() {
-    [ -f "$ADXC_HOME/VERSION" ] && cat "$ADXC_HOME/VERSION" || echo unknown
+set -o pipefail
+
+ADXC_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ADXC_ROOT_DIR="$(cd "${ADXC_COMMON_DIR}/.." && pwd)"
+ADXC_CONFIG_FILE="${ADXC_ROOT_DIR}/etc/adxc.conf"
+
+if [[ -f "${ADXC_CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
+    source "${ADXC_CONFIG_FILE}"
+fi
+
+ADXC_PRODUCT_NAME="${ADXC_PRODUCT_NAME:-aDXC-GAMA}"
+ADXC_VERSION="${ADXC_VERSION:-unknown}"
+ADXC_PROFILES_DIR="${ADXC_ROOT_DIR}/${ADXC_PROFILES_DIR_NAME:-profiles}"
+ADXC_TEMPLATES_DIR="${ADXC_ROOT_DIR}/${ADXC_TEMPLATES_DIR_NAME:-templates}"
+ADXC_ARCHIVE_DIR="${ADXC_ROOT_DIR}/${ADXC_ARCHIVE_DIR_NAME:-archive/profiles}"
+ADXC_COLOR_ENABLED="${ADXC_COLOR_ENABLED:-YES}"
+
+# shellcheck source=adxc-colors.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-colors.sh"
+adxc_init_colors
+
+adxc_print_line() {
+    printf '%s\n' '================================================================'
 }
 
-adxc_hostname() {
-    hostname -s 2>/dev/null || hostname 2>/dev/null || uname -n 2>/dev/null || echo unknown-host
+adxc_print_header() {
+    local title="$1"
+    adxc_print_line
+    printf '%s\n' "${title}"
+    adxc_print_line
 }
 
-adxc_load_user_config() {
-    ADXC_USER="${USER:-$(id -un)}"
-    ADXC_USER_HOME="${HOME:-}"
-    ADXC_RUNTIME_DIR="${ADXC_RUNTIME_DIR:-$ADXC_USER_HOME/.adxc}"
+adxc_print_error() {
+    printf '%bERROR%b: %s\n' "${ADXC_RED}" "${ADXC_RESET}" "$1" >&2
+}
 
-    if [ "$(id -u)" -eq 0 ]; then
-        ADXC_ROLE="ADMIN"
-    else
-        ADXC_ROLE="SUPPORT"
+adxc_print_warning() {
+    printf '%bWARNING%b: %s\n' "${ADXC_YELLOW}" "${ADXC_RESET}" "$1"
+}
+
+adxc_print_success() {
+    printf '%bSUCCESS%b: %s\n' "${ADXC_GREEN}" "${ADXC_RESET}" "$1"
+}
+
+adxc_pause() {
+    printf '\nPress ENTER to continue... '
+    read -r _unused_input || true
+}
+
+adxc_current_user() {
+    id -un 2>/dev/null || printf '%s' 'unknown'
+}
+
+adxc_current_date() {
+    date '+%Y-%m-%d %H:%M:%S'
+}
+
+adxc_sanitize_name() {
+    local raw_name="$1"
+    printf '%s' "${raw_name}" | tr '[:lower:]' '[:upper:]' | tr -cd 'A-Z0-9_.-'
+}
+
+adxc_profile_config_path() {
+    printf '%s/profile.conf' "$1"
+}
+
+adxc_load_profile_config() {
+    local profile_dir="$1"
+    local profile_config
+
+    profile_config="$(adxc_profile_config_path "${profile_dir}")"
+
+    PROFILE_NAME=""
+    PROFILE_CLASS="UNKNOWN"
+    PROFILE_TEMPLATE="unknown"
+    PROFILE_DESCRIPTION=""
+    PROFILE_ENABLED="NO"
+    PROFILE_STATUS="UNKNOWN"
+    PROFILE_CREATED_BY="unknown"
+    PROFILE_CREATED_DATE="unknown"
+    PROFILE_ARCHIVED_BY=""
+    PROFILE_ARCHIVED_DATE=""
+
+    if [[ -f "${profile_config}" ]]; then
+        # shellcheck source=/dev/null
+        source "${profile_config}"
     fi
 
-    ADXC_ACTIVE_PROFILES=""
-    [ -f "$ADXC_RUNTIME_DIR/config" ] && . "$ADXC_RUNTIME_DIR/config"
+    if [[ -z "${PROFILE_NAME}" ]]; then
+        PROFILE_NAME="$(basename "${profile_dir}")"
+    fi
 }
 
-adxc_require_admin_role() {
-    [ "$(id -u)" -eq 0 ] && return 0
-    case "${ADXC_ROLE:-}" in
-        ADMIN|admin|root) return 0 ;;
-        *) adxc_error "adxc-admin requires ADMIN role"; exit 1 ;;
-    esac
+adxc_template_config_path() {
+    local template_name="$1"
+    printf '%s/%s/template.conf' "${ADXC_TEMPLATES_DIR}" "${template_name}"
 }
 
-adxc_print_section() {
-    printf "\n%s\n%s\n%s\n\n" "============================================================" "$1" "============================================================"
-}
+adxc_load_template_config() {
+    local template_name="$1"
+    local template_config
 
-adxc_safe_name() {
-    printf '%s' "$1" | tr -cd 'A-Za-z0-9_.-'
+    template_config="$(adxc_template_config_path "${template_name}")"
+
+    TEMPLATE_NAME="${template_name}"
+    TEMPLATE_CLASS="UNKNOWN"
+    TEMPLATE_DESCRIPTION=""
+    TEMPLATE_VERSION="1.0"
+
+    if [[ -f "${template_config}" ]]; then
+        # shellcheck source=/dev/null
+        source "${template_config}"
+    fi
 }

@@ -1,39 +1,46 @@
-# aDXC-GAMA 0.3.0-rc3 Manifest
+# aDXC-GAMA 0.3.0-rc5 Manifest
 
-## Release purpose
+## Main executable files
 
-Finalizes the package startup model by replacing test profiles `TQM1` and `TQM2` with blank example profiles.
+- `bin/adxc`
+- `bin/adxc-admin`
+- `bin/adxc-cmd`
+- `bin/adxc-os`
+- `bin/adxc-help`
+- `install.sh`
+- `uninstall.sh`
 
-## Shipped profiles
+## Administration files
 
-```text
-profiles/MQ_MIQM_EXAMPLE
-profiles/MQ_STANDALONE_EXAMPLE
-profiles/GENERIC_MW_EXAMPLE
-```
+- `admin/adxc-enable-user.sh`
+- `admin/adxc-disable-user.sh`
+- `admin/adxc-create-profile`
+- `admin/adxc-create-command`
 
-## Important files
+## Libraries
 
-```text
-bin/adxc
-bin/adxc-cmd
-bin/adxc-admin
-bin/adxc-miqm-control
-bin/adxc-miqm-healthcheck
-lib/adxc-common.sh
-lib/adxc-profiles.sh
-lib/adxc-commands.sh
-lib/adxc-dashboard.sh
-lib/adxc-mq-miqm-common.sh
-lib/adxc-mq-miqm-control.sh
-```
+- `lib/adxc-common.sh`
+- `lib/adxc-colors.sh`
+- `lib/adxc-profile-management.sh`
 
-## Healthcheck summary fields
+## Runtime areas
 
-```text
-QMs
-Active
-Standby
-Failures
-Failover Ready
-```
+- `commands/global/`
+- `profiles/`
+- `archive/profiles/`
+- `templates/`
+- `docs/`
+- `optional/`
+- `assets/logo/`
+- `test/`
+- `package/`
+
+## Priority 1 delivery
+
+- Profile Management under `adxc-admin`
+- Create Profile
+- List Profiles with colorized state
+- Delete Profile
+- Disable and Archive
+- Permanent Delete
+- Restore Archived Profile
