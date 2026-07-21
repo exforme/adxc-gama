@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Search current user shell history.
 set -euo pipefail
 PATTERN="${1:-}"
 if [[ -z "${PATTERN}" ]]; then

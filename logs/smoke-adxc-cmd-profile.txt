@@ -1,0 +1,3 @@
+ATTACHED COMMANDS FOR MQ_MIQM_EXAMPLE
+  cluster-status           commands/cluster-status.cmd
+  demo-global-healthcheck  commands/demo-global-healthcheck.cmd

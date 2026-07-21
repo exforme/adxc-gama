@@ -2,8 +2,8 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA Profile Management library
 # -----------------------------------------------------------------------------
-# Implements Create Profile, List Profiles, Delete Profile and Restore Profile.
-# Profiles are displayed by PROFILE_CLASS + PROFILE_NAME.
+# Locked Priority 1 + Priority 3 model.
+# Profile-owned directories: profile.conf, commands/, scripts/, logs/.
 
 # shellcheck source=adxc-common.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
@@ -18,7 +18,6 @@ adxc_profile_management_menu() {
         printf '[4] Restore Archived Profile\n'
         printf '[0] Back\n'
         printf '\nSelect option: '
-
         read -r selected_option || return 0
 
         case "${selected_option}" in
@@ -98,7 +97,7 @@ adxc_create_profile_wizard() {
     printf '\nStep 2: Profile name\n'
     printf 'Enter profile name, for example TQM1: '
     read -r profile_name_raw || return 1
-    profile_name="$(adxc_sanitize_name "${profile_name_raw}")"
+    profile_name="$(adxc_sanitize_profile_name "${profile_name_raw}")"
 
     if [[ -z "${profile_name}" ]]; then
         adxc_print_error "Profile name cannot be empty."
@@ -110,7 +109,7 @@ adxc_create_profile_wizard() {
         return 1
     fi
 
-    if [[ -d "${ADXC_ARCHIVE_DIR}/${profile_name}" ]]; then
+    if [[ -d "${ADXC_ARCHIVE_PROFILES_DIR}/${profile_name}" ]]; then
         adxc_print_error "Archived profile ${profile_name} already exists. Restore it instead."
         return 1
     fi
@@ -152,7 +151,7 @@ adxc_create_profile_from_template() {
     created_by="$(adxc_current_user)"
     created_date="$(adxc_current_date)"
 
-    mkdir -p "${profile_dir}"/{commands,menus,scripts,logs,cache}
+    mkdir -p "${profile_dir}"/{commands,scripts,logs}
 
     cat > "${profile_dir}/profile.conf" <<EOF_PROFILE
 # -----------------------------------------------------------------------------
@@ -170,19 +169,11 @@ PROFILE_ARCHIVED_BY=""
 PROFILE_ARCHIVED_DATE=""
 EOF_PROFILE
 
-    printf '# %s commands\n' "${profile_name}" > "${profile_dir}/commands/README.md"
-    printf '# %s menus\n' "${profile_name}" > "${profile_dir}/menus/README.md"
-    printf '# %s scripts\n' "${profile_name}" > "${profile_dir}/scripts/README.md"
+    printf '# %s attached commands\n' "${profile_name}" > "${profile_dir}/commands/README.md"
+    printf '# %s profile-local scripts\n' "${profile_name}" > "${profile_dir}/scripts/README.md"
+    printf '# %s runtime logs\n' "${profile_name}" > "${profile_dir}/logs/README.md"
 
     adxc_print_success "Profile ${profile_name} created as ${profile_class} from template ${template_name}."
-}
-
-adxc_list_profiles_screen() {
-    clear 2>/dev/null || true
-    adxc_print_header "LIST PROFILES"
-    adxc_print_profile_table "${ADXC_PROFILES_DIR}" "ACTIVE AND DISABLED PROFILES"
-    printf '\n'
-    adxc_print_profile_table "${ADXC_ARCHIVE_DIR}" "ARCHIVED PROFILES"
 }
 
 adxc_print_profile_table() {
@@ -212,26 +203,26 @@ adxc_print_profile_table() {
     fi
 
     local index=1
-
     for profile_dir in "${profile_dirs[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         status_color="$(adxc_status_color "${PROFILE_STATUS}")"
-
         printf '%-4s %-14s %-24s %b%-12s%b %-18s %s\n' \
-            "${index}" \
-            "${PROFILE_CLASS}" \
-            "${PROFILE_NAME}" \
-            "${status_color}" \
-            "${PROFILE_STATUS}" \
-            "${ADXC_RESET}" \
-            "${PROFILE_TEMPLATE}" \
-            "${PROFILE_DESCRIPTION}"
-
+            "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}" \
+            "${status_color}" "${PROFILE_STATUS}" "${ADXC_RESET}" \
+            "${PROFILE_TEMPLATE}" "${PROFILE_DESCRIPTION}"
         index=$((index + 1))
         total_profiles=$((total_profiles + 1))
     done
 
     printf '\nTotal Profiles : %d\n' "${total_profiles}"
+}
+
+adxc_list_profiles_screen() {
+    clear 2>/dev/null || true
+    adxc_print_header "LIST PROFILES"
+    adxc_print_profile_table "${ADXC_PROFILES_DIR}" "ACTIVE AND DISABLED PROFILES"
+    printf '\n'
+    adxc_print_profile_table "${ADXC_ARCHIVE_PROFILES_DIR}" "ARCHIVED PROFILES"
 }
 
 adxc_select_active_profile() {
@@ -250,7 +241,6 @@ adxc_select_active_profile() {
 
     local index=1
     local profile_dir
-
     for profile_dir in "${profile_dirs[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         printf '[%d] %-14s %s\n' "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}"
@@ -271,80 +261,6 @@ adxc_select_active_profile() {
     fi
 
     SELECTED_PROFILE_DIR="${profile_dirs[$((selected_number - 1))]}"
-}
-
-adxc_delete_profile_wizard() {
-    local selected_action
-    local confirmation
-    local profile_dir
-    local profile_name
-
-    clear 2>/dev/null || true
-    adxc_print_header "DELETE PROFILE"
-
-    adxc_select_active_profile "Select profile to delete or archive" || return 1
-
-    profile_dir="${SELECTED_PROFILE_DIR}"
-    adxc_load_profile_config "${profile_dir}"
-    profile_name="${PROFILE_NAME}"
-
-    printf '\nProfile selected\n'
-    printf '  Class       : %s\n' "${PROFILE_CLASS}"
-    printf '  Name        : %s\n' "${PROFILE_NAME}"
-    printf '  Template    : %s\n' "${PROFILE_TEMPLATE}"
-    printf '  Status      : %s\n' "${PROFILE_STATUS}"
-    printf '  Description : %s\n' "${PROFILE_DESCRIPTION}"
-
-    printf '\nChoose delete mode\n'
-    printf '[1] Disable and Archive  - safe, reversible\n'
-    printf '[2] Permanent Delete     - destructive, not reversible\n'
-    printf '[0] Cancel\n'
-    printf '\nSelect option: '
-    read -r selected_action || return 1
-
-    case "${selected_action}" in
-        1)
-            printf '\nType ARCHIVE to disable and archive profile %s: ' "${profile_name}"
-            read -r confirmation || return 1
-            [[ "${confirmation}" == "ARCHIVE" ]] || { adxc_print_warning "Archive cancelled."; return 0; }
-            adxc_archive_profile "${profile_dir}"
-            ;;
-        2)
-            adxc_print_warning "Permanent delete removes the profile directory and all profile customizations."
-            printf 'Type DELETE to permanently delete profile %s: ' "${profile_name}"
-            read -r confirmation || return 1
-            [[ "${confirmation}" == "DELETE" ]] || { adxc_print_warning "Permanent delete cancelled."; return 0; }
-            rm -rf "${profile_dir}"
-            adxc_print_success "Profile ${profile_name} permanently deleted."
-            ;;
-        0)
-            adxc_print_warning "Delete cancelled."
-            ;;
-        *)
-            adxc_print_error "Invalid option selected."
-            return 1
-            ;;
-    esac
-}
-
-adxc_archive_profile() {
-    local profile_dir="$1"
-    local profile_name
-    local archive_target
-
-    adxc_load_profile_config "${profile_dir}"
-    profile_name="${PROFILE_NAME}"
-    archive_target="${ADXC_ARCHIVE_DIR}/${profile_name}"
-
-    if [[ -d "${archive_target}" ]]; then
-        adxc_print_error "Archived profile already exists: ${archive_target}"
-        return 1
-    fi
-
-    adxc_update_profile_state "${profile_dir}" "NO" "ARCHIVED" "$(adxc_current_user)" "$(adxc_current_date)"
-    mkdir -p "${ADXC_ARCHIVE_DIR}"
-    mv "${profile_dir}" "${archive_target}"
-    adxc_print_success "Profile ${profile_name} disabled and archived."
 }
 
 adxc_update_profile_state() {
@@ -373,8 +289,75 @@ PROFILE_CREATED_DATE="${PROFILE_CREATED_DATE}"
 PROFILE_ARCHIVED_BY="${archived_by}"
 PROFILE_ARCHIVED_DATE="${archived_date}"
 EOF_STATE
-
     mv "${profile_config}.tmp" "${profile_config}"
+}
+
+adxc_archive_profile() {
+    local profile_dir="$1"
+    local profile_name
+    local archive_target
+
+    adxc_load_profile_config "${profile_dir}"
+    profile_name="${PROFILE_NAME}"
+    archive_target="${ADXC_ARCHIVE_PROFILES_DIR}/${profile_name}"
+
+    if [[ -d "${archive_target}" ]]; then
+        adxc_print_error "Archived profile already exists: ${archive_target}"
+        return 1
+    fi
+
+    adxc_update_profile_state "${profile_dir}" "NO" "ARCHIVED" "$(adxc_current_user)" "$(adxc_current_date)"
+    mkdir -p "${ADXC_ARCHIVE_PROFILES_DIR}"
+    mv "${profile_dir}" "${archive_target}"
+    adxc_print_success "Profile ${profile_name} disabled and archived."
+}
+
+adxc_delete_profile_wizard() {
+    local selected_action
+    local confirmation
+    local profile_dir
+    local profile_name
+
+    clear 2>/dev/null || true
+    adxc_print_header "DELETE PROFILE"
+    adxc_select_active_profile "Select profile to delete or archive" || return 1
+
+    profile_dir="${SELECTED_PROFILE_DIR}"
+    adxc_load_profile_config "${profile_dir}"
+    profile_name="${PROFILE_NAME}"
+
+    printf '\nProfile selected\n'
+    printf '  Class       : %s\n' "${PROFILE_CLASS}"
+    printf '  Name        : %s\n' "${PROFILE_NAME}"
+    printf '  Template    : %s\n' "${PROFILE_TEMPLATE}"
+    printf '  Status      : %s\n' "${PROFILE_STATUS}"
+    printf '  Description : %s\n' "${PROFILE_DESCRIPTION}"
+
+    printf '\nChoose delete mode\n'
+    printf '[1] Disable and Archive  - safe, reversible\n'
+    printf '[2] Permanent Delete     - destructive, not reversible\n'
+    printf '[0] Cancel\n'
+    printf '\nSelect option: '
+    read -r selected_action || return 1
+
+    case "${selected_action}" in
+        1)
+            printf '\nType ARCHIVE to disable and archive profile %s: ' "${profile_name}"
+            read -r confirmation || return 1
+            [[ "${confirmation}" == "ARCHIVE" ]] || { adxc_print_warning "Archive cancelled."; return 0; }
+            adxc_archive_profile "${profile_dir}"
+            ;;
+        2)
+            adxc_print_warning "Permanent delete removes profile configuration, attached command links, scripts and logs."
+            printf 'Type DELETE to permanently delete profile %s: ' "${profile_name}"
+            read -r confirmation || return 1
+            [[ "${confirmation}" == "DELETE" ]] || { adxc_print_warning "Permanent delete cancelled."; return 0; }
+            rm -rf "${profile_dir}"
+            adxc_print_success "Profile ${profile_name} permanently deleted."
+            ;;
+        0) adxc_print_warning "Delete cancelled." ;;
+        *) adxc_print_error "Invalid option selected."; return 1 ;;
+    esac
 }
 
 adxc_restore_profile_wizard() {
@@ -388,7 +371,7 @@ adxc_restore_profile_wizard() {
     clear 2>/dev/null || true
     adxc_print_header "RESTORE ARCHIVED PROFILE"
 
-    mapfile -t archived_profiles < <(find "${ADXC_ARCHIVE_DIR}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+    mapfile -t archived_profiles < <(find "${ADXC_ARCHIVE_PROFILES_DIR}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
 
     if [[ "${#archived_profiles[@]}" -eq 0 ]]; then
         adxc_print_warning "No archived profiles found."
@@ -397,7 +380,6 @@ adxc_restore_profile_wizard() {
 
     local index=1
     local profile_dir
-
     for profile_dir in "${archived_profiles[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         printf '[%d] %-14s %s\n' "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}"

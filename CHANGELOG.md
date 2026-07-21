@@ -1,30 +1,35 @@
 # Changelog
 
-## 0.3.0-rc5
-
-### Fixed
-
-- Restored complete package skeleton from the earlier GAMA baseline.
-- Restored `uninstall.sh`.
-- Restored `admin/` user enablement scripts.
-- Restored `bin/adxc-os`.
-- Restored `commands/global` with example global commands.
-- Restored `templates/user-home/adxc-runtime/activate.sh`.
-- Restored `templates/profile-templates` compatibility tree.
-- Restored `templates/command-templates/basic-command.sh`.
-- Added `PACKAGE_TREE.txt` to prevent future package drift.
+## 0.3.0-rc6
 
 ### Added
 
-- Profile Management under `adxc-admin`.
-- Create Profile Wizard.
-- List Profiles with colorized status.
-- Delete Profile with Disable/Archive and Permanent Delete modes.
-- Restore Archived Profile workflow.
-- `PROFILE_CLASS + PROFILE_NAME` display model.
+- Full Command Management implementation under `adxc-admin`.
+- Create Command wizard.
+- List Commands with colorized state.
+- Attach Command workflow.
+- Retire Command workflow with Disable/Archive and Permanent Delete options.
+- Restore Retired Command workflow.
+- Command execution helper in `adxc-cmd --run <PROFILE> <COMMAND>`.
+- Global script directory `scripts/`.
+- Profile-local scripts directory `profiles/<PROFILE>/scripts/`.
+- Demo external script command.
+
+### Changed
+
+- Command types locked to `single-command` and `external-script`.
+- Removed `command-pipeline` concept.
+- Profile structure standardized to `profile.conf`, `commands/`, `scripts/`, `logs/`.
+- Removed `menus/` and `cache/` from profile directories.
 
 ### Preserved
 
-- Example-profile fresh install strategy.
-- Human-readable Bash-first implementation.
-- Administration vs operations separation.
+- Complete rc5 package skeleton.
+- `uninstall.sh`.
+- `admin/` user enablement scripts.
+- `bin/adxc-os`.
+- `commands/global/` compatibility helpers.
+- `templates/user-home/adxc-runtime/activate.sh`.
+- `templates/profile-templates/` compatibility tree.
+- `templates/command-templates/basic-command.sh`.
+- `PACKAGE_TREE.txt` package drift guard.

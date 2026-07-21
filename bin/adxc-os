@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------------------------
-# aDXC-GAMA OS diagnostics placeholder
+# aDXC-GAMA OS diagnostics helper
 # -----------------------------------------------------------------------------
-
 set -euo pipefail
-
 printf 'OS Linux health checks and diagnostics\n'
 printf 'Hostname : %s\n' "$(hostname 2>/dev/null || printf unknown)"
 printf 'Kernel   : %s\n' "$(uname -r 2>/dev/null || printf unknown)"

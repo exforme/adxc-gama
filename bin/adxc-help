@@ -2,22 +2,20 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA help command
 # -----------------------------------------------------------------------------
-
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-
 # shellcheck source=../lib/adxc-common.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
-
 adxc_print_header "aDXC-GAMA HELP"
 printf 'Operations:\n'
-printf '  adxc                  Show operations dashboard\n'
-printf '  adxc <profile>        Open profile home screen\n'
-printf '  adxc-os               Show basic OS diagnostics\n'
-printf '  adxc-cmd --list       List global and profile commands\n\n'
+printf '  adxc                              Show operations dashboard\n'
+printf '  adxc <profile>                    Open profile home screen\n'
+printf '  adxc-os                           Show basic OS diagnostics\n'
+printf '  adxc-cmd --list                   List command repository\n'
+printf '  adxc-cmd --profile <PROFILE>      List commands attached to a profile\n'
+printf '  adxc-cmd --run <PROFILE> <CMD>    Run attached command\n\n'
 printf 'Administration:\n'
-printf '  adxc-admin            Open administration console\n'
+printf '  adxc-admin                        Open administration console\n'
 printf '  admin/adxc-enable-user.sh <user>\n'
 printf '  admin/adxc-disable-user.sh <user>\n'

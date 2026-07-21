@@ -1,1 +1,1 @@
-# MQ_MIQM_EXAMPLE Scripts
+# MQ_MIQM_EXAMPLE Profile-Local Scripts

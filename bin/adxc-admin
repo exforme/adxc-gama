@@ -2,17 +2,15 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA Administration Console
 # -----------------------------------------------------------------------------
-
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-
 # shellcheck source=../lib/adxc-common.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
-
 # shellcheck source=../lib/adxc-profile-management.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-profile-management.sh"
+# shellcheck source=../lib/adxc-command-management.sh
+source "${ADXC_ROOT_DIR}/lib/adxc-command-management.sh"
 
 adxc_admin_main_menu() {
     while true; do
@@ -20,14 +18,14 @@ adxc_admin_main_menu() {
         adxc_print_header "aDXC-GAMA ADMINISTRATION CONSOLE"
         printf 'Version: %s\n\n' "${ADXC_VERSION}"
         printf '[1] Profile Management\n'
-        printf '[2] Command Management   %bplanned%b\n' "${ADXC_GRAY}" "${ADXC_RESET}"
+        printf '[2] Command Management\n'
         printf '[3] User Enablement      %badmin scripts%b\n' "${ADXC_GRAY}" "${ADXC_RESET}"
         printf '[0] Exit\n'
         printf '\nSelect option: '
         read -r selected_option || exit 0
         case "${selected_option}" in
             1) adxc_profile_management_menu ;;
-            2) adxc_print_warning "Command Management is planned for Priority 2."; adxc_pause ;;
+            2) adxc_command_management_menu ;;
             3) adxc_print_warning "Use admin/adxc-enable-user.sh and admin/adxc-disable-user.sh."; adxc_pause ;;
             0) exit 0 ;;
             *) adxc_print_warning "Invalid option selected."; adxc_pause ;;

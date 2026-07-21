@@ -1,0 +1,2 @@
+Demo global healthcheck script executed.
+Arguments: 

@@ -1,4 +1,4 @@
-aDXC-GAMA-0.3.0-rc5/
+aDXC-GAMA-0.3.0-rc6/
   CHANGELOG.md
   MANIFEST.md
   PACKAGE_TREE.txt
@@ -10,6 +10,7 @@ aDXC-GAMA-0.3.0-rc5/
     adxc-disable-user.sh
     adxc-enable-user.sh
   archive/
+    commands/
     profiles/
   assets/
     logo/
@@ -21,13 +22,17 @@ aDXC-GAMA-0.3.0-rc5/
     adxc-help
     adxc-os
   commands/
+    cluster-status.cmd
+    demo-global-healthcheck.cmd
     global/
       check-conn
       grep-history
   docs/
     guides/
+      COMMAND_MANAGEMENT.md
       INSTALLATION.md
       PROFILE_MANAGEMENT.md
+      PROFILE_STRUCTURE.md
     man/
       man1/
         adxc.1
@@ -36,6 +41,7 @@ aDXC-GAMA-0.3.0-rc5/
   install.sh
   lib/
     adxc-colors.sh
+    adxc-command-management.sh
     adxc-common.sh
     adxc-profile-management.sh
   logs/
@@ -45,73 +51,84 @@ aDXC-GAMA-0.3.0-rc5/
     README.md
   profiles/
     GENERIC_MW_EXAMPLE/
-      cache/
       commands/
         README.md
       logs/
-      menus/
         README.md
       profile.conf
       scripts/
         README.md
     MQ_MIQM_EXAMPLE/
-      cache/
       commands/
         README.md
+        cluster-status.link
+        demo-global-healthcheck.link
       logs/
-      menus/
         README.md
       profile.conf
       scripts/
         README.md
     MQ_STANDALONE_EXAMPLE/
-      cache/
       commands/
         README.md
       logs/
-      menus/
         README.md
       profile.conf
       scripts/
         README.md
+  scripts/
+    README.md
+    demo-global-healthcheck.sh
   templates/
     command-templates/
       basic-command.sh
     custom_empty/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     dynatrace/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     generic_middleware/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     linux/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     mq_miqm/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     mq_standalone/
       commands/
+        README.md
       menus/
         standard.menu
       scripts/
+        README.md
       template.conf
     profile-templates/
       dynatrace/

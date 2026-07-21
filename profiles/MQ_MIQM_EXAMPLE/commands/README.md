@@ -1,1 +1,1 @@
-# MQ_MIQM_EXAMPLE Commands
+# MQ_MIQM_EXAMPLE Attached Commands
