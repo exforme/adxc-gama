@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Simple connectivity helper retained for compatibility.
 set -euo pipefail
 TARGET="${1:-localhost}"
 printf 'Checking basic connectivity to %s\n' "${TARGET}"

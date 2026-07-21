@@ -1,4 +1,4 @@
-aDXC-GAMA-0.3.0-rc6/
+aDXC-GAMA-0.3.0-rc7/
   CHANGELOG.md
   MANIFEST.md
   PACKAGE_TREE.txt
@@ -33,6 +33,7 @@ aDXC-GAMA-0.3.0-rc6/
       INSTALLATION.md
       PROFILE_MANAGEMENT.md
       PROFILE_STRUCTURE.md
+      USER_ENABLEMENT.md
     man/
       man1/
         adxc.1
@@ -45,6 +46,12 @@ aDXC-GAMA-0.3.0-rc6/
     adxc-common.sh
     adxc-profile-management.sh
   logs/
+    smoke-activate.txt
+    smoke-adxc-cmd-list.txt
+    smoke-adxc-cmd-profile.txt
+    smoke-adxc-dashboard.txt
+    smoke-run-cluster-status.txt
+    smoke-run-global-healthcheck.txt
   optional/
     README.md
   package/

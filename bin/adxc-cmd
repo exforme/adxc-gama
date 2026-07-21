@@ -2,6 +2,8 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA command registry viewer and runner
 # -----------------------------------------------------------------------------
+# Lists command objects, lists profile attachments and runs attached commands.
+
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ADXC_ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -27,16 +29,20 @@ adxc_list_profile_commands() {
     local profile_dir="${ADXC_PROFILES_DIR}/${profile_name}"
     local link_files=()
     local link_file
+
     if [[ ! -d "${profile_dir}" ]]; then
         adxc_print_error "Profile not found: ${profile_name}"
         exit 1
     fi
+
     printf 'ATTACHED COMMANDS FOR %s\n' "${profile_name}"
     mapfile -t link_files < <(find "${profile_dir}/commands" -mindepth 1 -maxdepth 1 -type f -name '*.link' 2>/dev/null | sort)
+
     if [[ "${#link_files[@]}" -eq 0 ]]; then
         printf '  No commands attached.\n'
         return 0
     fi
+
     for link_file in "${link_files[@]}"; do
         COMMAND_NAME=""
         COMMAND_FILE=""

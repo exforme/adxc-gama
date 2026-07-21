@@ -2,8 +2,11 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA Profile Management library
 # -----------------------------------------------------------------------------
-# Locked Priority 1 + Priority 3 model.
-# Profile-owned directories: profile.conf, commands/, scripts/, logs/.
+# Profile structure is locked as:
+#   profiles/<PROFILE>/profile.conf
+#   profiles/<PROFILE>/commands/
+#   profiles/<PROFILE>/scripts/
+#   profiles/<PROFILE>/logs/
 
 # shellcheck source=adxc-common.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
@@ -145,11 +148,6 @@ adxc_create_profile_from_template() {
     local profile_name="$3"
     local profile_description="$4"
     local profile_dir="${ADXC_PROFILES_DIR}/${profile_name}"
-    local created_by
-    local created_date
-
-    created_by="$(adxc_current_user)"
-    created_date="$(adxc_current_date)"
 
     mkdir -p "${profile_dir}"/{commands,scripts,logs}
 
@@ -163,8 +161,8 @@ PROFILE_TEMPLATE="${template_name}"
 PROFILE_DESCRIPTION="${profile_description}"
 PROFILE_ENABLED="YES"
 PROFILE_STATUS="ACTIVE"
-PROFILE_CREATED_BY="${created_by}"
-PROFILE_CREATED_DATE="${created_date}"
+PROFILE_CREATED_BY="$(adxc_current_user)"
+PROFILE_CREATED_DATE="$(adxc_current_date)"
 PROFILE_ARCHIVED_BY=""
 PROFILE_ARCHIVED_DATE=""
 EOF_PROFILE
@@ -179,10 +177,8 @@ EOF_PROFILE
 adxc_print_profile_table() {
     local source_dir="$1"
     local table_title="$2"
-    local total_profiles=0
     local profile_dirs=()
-    local profile_dir
-    local status_color
+    local total_profiles=0
 
     printf '%s\n' "${table_title}"
     printf '%-4s %-14s %-24s %-12s %-18s %s\n' \
@@ -203,6 +199,9 @@ adxc_print_profile_table() {
     fi
 
     local index=1
+    local profile_dir
+    local status_color
+
     for profile_dir in "${profile_dirs[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         status_color="$(adxc_status_color "${PROFILE_STATUS}")"
@@ -241,6 +240,7 @@ adxc_select_active_profile() {
 
     local index=1
     local profile_dir
+
     for profile_dir in "${profile_dirs[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         printf '[%d] %-14s %s\n' "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}"
@@ -380,6 +380,7 @@ adxc_restore_profile_wizard() {
 
     local index=1
     local profile_dir
+
     for profile_dir in "${archived_profiles[@]}"; do
         adxc_load_profile_config "${profile_dir}"
         printf '[%d] %-14s %s\n' "${index}" "${PROFILE_CLASS}" "${PROFILE_NAME}"

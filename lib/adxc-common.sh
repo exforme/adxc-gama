@@ -2,6 +2,8 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA common runtime library
 # -----------------------------------------------------------------------------
+# Shared functions for paths, metadata loading, messages and common formatting.
+
 set -o pipefail
 
 ADXC_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -28,7 +30,7 @@ source "${ADXC_ROOT_DIR}/lib/adxc-colors.sh"
 adxc_init_colors
 
 adxc_print_line() {
-    printf '%s\n' '================================================================'
+    printf '%s\n' '============================================================'
 }
 
 adxc_print_header() {
@@ -104,16 +106,9 @@ adxc_load_profile_config() {
     fi
 }
 
-adxc_template_config_path() {
-    local template_name="$1"
-    printf '%s/%s/template.conf' "${ADXC_TEMPLATES_DIR}" "${template_name}"
-}
-
 adxc_load_template_config() {
     local template_name="$1"
-    local template_config
-
-    template_config="$(adxc_template_config_path "${template_name}")"
+    local template_config="${ADXC_TEMPLATES_DIR}/${template_name}/template.conf"
 
     TEMPLATE_NAME="${template_name}"
     TEMPLATE_CLASS="UNKNOWN"
@@ -124,12 +119,6 @@ adxc_load_template_config() {
         # shellcheck source=/dev/null
         source "${template_config}"
     fi
-}
-
-adxc_command_config_path() {
-    local command_dir="$1"
-    local command_name="$2"
-    printf '%s/%s.cmd' "${command_dir}" "${command_name}"
 }
 
 adxc_load_command_file() {

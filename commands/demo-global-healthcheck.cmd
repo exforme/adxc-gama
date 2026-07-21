@@ -21,10 +21,12 @@ source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
 main() {
     local resolved_script
     resolved_script="$(adxc_relative_to_root "${SCRIPT_PATH}")"
+
     if [[ ! -x "${resolved_script}" ]]; then
         printf 'ERROR: Script is not executable or does not exist: %s\n' "${resolved_script}" >&2
         exit 1
     fi
+
     "${resolved_script}" "$@"
 }
 

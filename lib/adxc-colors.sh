@@ -2,6 +2,9 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA color helper library
 # -----------------------------------------------------------------------------
+# The framework keeps colors centralized so dashboards and admin screens remain
+# visually consistent and easy to adjust in one place.
+
 ADXC_RESET=""
 ADXC_BOLD=""
 ADXC_GREEN=""

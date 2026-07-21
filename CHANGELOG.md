@@ -1,35 +1,29 @@
 # Changelog
 
-## 0.3.0-rc6
+## 0.3.0-rc7
 
 ### Added
 
-- Full Command Management implementation under `adxc-admin`.
-- Create Command wizard.
-- List Commands with colorized state.
-- Attach Command workflow.
-- Retire Command workflow with Disable/Archive and Permanent Delete options.
-- Restore Retired Command workflow.
-- Command execution helper in `adxc-cmd --run <PROFILE> <COMMAND>`.
-- Global script directory `scripts/`.
-- Profile-local scripts directory `profiles/<PROFILE>/scripts/`.
-- Demo external script command.
+- Hardened installer with root validation.
+- Installer source tree validation.
+- Installer shell syntax validation.
+- Existing `/opt/adxc` backup before replacement.
+- Ownership and permission normalization.
+- Post-installation summary with next steps.
+- `adxc-enable-user.sh --force <user>`.
+- Forced `.bashrc` startup hook for login activation.
+- Login-time `aDXC ACTIVE` banner.
+- `adxc-disable-user.sh` now removes the forced activation block when present.
 
 ### Changed
 
-- Command types locked to `single-command` and `external-script`.
-- Removed `command-pipeline` concept.
-- Profile structure standardized to `profile.conf`, `commands/`, `scripts/`, `logs/`.
-- Removed `menus/` and `cache/` from profile directories.
+- Standard install location is now `/opt/adxc`.
+- Installer, user enablement and activation scripts rewritten for readability.
+- README and documentation updated for installer hardening.
 
 ### Preserved
 
-- Complete rc5 package skeleton.
-- `uninstall.sh`.
-- `admin/` user enablement scripts.
-- `bin/adxc-os`.
-- `commands/global/` compatibility helpers.
-- `templates/user-home/adxc-runtime/activate.sh`.
-- `templates/profile-templates/` compatibility tree.
-- `templates/command-templates/basic-command.sh`.
-- `PACKAGE_TREE.txt` package drift guard.
+- Priority 1 Profile Management.
+- Priority 2 Command Management.
+- Priority 3 Profile Directory Structure.
+- Full package tree guard with `PACKAGE_TREE.txt`.

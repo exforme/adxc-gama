@@ -2,9 +2,11 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA Command Management library
 # -----------------------------------------------------------------------------
-# Locked Priority 2 model.
-# Command types: single-command, external-script.
-# Command metadata is stored inside the command file itself.
+# Command objects live in commands/*.cmd.
+# Metadata and implementation are intentionally stored in the same file.
+# Supported command types:
+#   single-command  - one shell command including parameters
+#   external-script - calls a global, profile-local, or absolute script path
 
 # shellcheck source=adxc-common.sh
 source "${ADXC_ROOT_DIR}/lib/adxc-common.sh"
@@ -74,7 +76,7 @@ adxc_create_command_wizard() {
 
     printf '\nStep 2: Command type\n\n'
     printf '[1] Single Command   - one shell command including parameters, for example dspmq -x\n'
-    printf '[2] External Script  - call an existing script from scripts/ or profiles/<PROFILE>/scripts/ or absolute path\n'
+    printf '[2] External Script  - existing script from scripts/, profiles/<PROFILE>/scripts/, or absolute path\n'
     printf '\nSelect command type: '
     read -r command_type_selection || return 1
 
@@ -92,10 +94,7 @@ adxc_create_command_wizard() {
         printf '\nStep 4: Single command line\n'
         printf 'Enter command, parameters are allowed, for example dspmq -x: '
         read -r command_line || return 1
-        if [[ -z "${command_line}" ]]; then
-            adxc_print_error "Command line cannot be empty."
-            return 1
-        fi
+        [[ -n "${command_line}" ]] || { adxc_print_error "Command line cannot be empty."; return 1; }
     else
         printf '\nStep 4: External script path\n'
         printf 'Examples:\n'
@@ -104,10 +103,7 @@ adxc_create_command_wizard() {
         printf '  /opt/customer/scripts/customer-healthcheck.sh\n\n'
         printf 'Enter script path: '
         read -r script_path || return 1
-        if [[ -z "${script_path}" ]]; then
-            adxc_print_error "Script path cannot be empty."
-            return 1
-        fi
+        [[ -n "${script_path}" ]] || { adxc_print_error "Script path cannot be empty."; return 1; }
     fi
 
     printf '\nReview\n'
@@ -122,11 +118,7 @@ adxc_create_command_wizard() {
 
     printf '\nCreate this command? Type CREATE to continue: '
     read -r confirmation || return 1
-
-    if [[ "${confirmation}" != "CREATE" ]]; then
-        adxc_print_warning "Command creation cancelled."
-        return 0
-    fi
+    [[ "${confirmation}" == "CREATE" ]] || { adxc_print_warning "Command creation cancelled."; return 0; }
 
     if [[ "${command_type}" == "single-command" ]]; then
         adxc_create_single_command "${command_name}" "${command_description}" "${command_line}"
@@ -198,6 +190,10 @@ COMMAND_ARCHIVED_DATE=""
 # -----------------------------------------------------------------------------
 SCRIPT_PATH="${script_path}"
 
+SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
+ADXC_ROOT_DIR="\${SCRIPT_DIR}"
+source "\${ADXC_ROOT_DIR}/lib/adxc-common.sh"
+
 main() {
     local resolved_script
     resolved_script="\$(adxc_relative_to_root "\${SCRIPT_PATH}")"
@@ -210,9 +206,6 @@ main() {
     "\${resolved_script}" "\$@"
 }
 
-SCRIPT_DIR="\$(cd "\$(dirname "\${BASH_SOURCE[0]}")/.." && pwd)"
-ADXC_ROOT_DIR="\${SCRIPT_DIR}"
-source "\${ADXC_ROOT_DIR}/lib/adxc-common.sh"
 main "\$@"
 EOF_COMMAND
 
@@ -224,10 +217,6 @@ adxc_print_command_table() {
     local command_dir="$1"
     local table_title="$2"
     local command_files=()
-    local command_file_name
-    local command_file
-    local status_color
-    local index=1
 
     printf '%s\n' "${table_title}"
     printf '%-4s %-24s %-17s %-12s %s\n' 'ID' 'COMMAND' 'TYPE' 'STATUS' 'DESCRIPTION'
@@ -245,9 +234,12 @@ adxc_print_command_table() {
         return 0
     fi
 
+    local index=1
+    local command_file_name
+    local status_color
+
     for command_file_name in "${command_files[@]}"; do
-        command_file="${command_dir}/${command_file_name}"
-        adxc_load_command_file "${command_file}"
+        adxc_load_command_file "${command_dir}/${command_file_name}"
         status_color="$(adxc_status_color "${COMMAND_STATUS}")"
         printf '%-4s %-24s %-17s %b%-12s%b %s\n' \
             "${index}" "${COMMAND_NAME}" "${COMMAND_TYPE}" \
@@ -282,6 +274,7 @@ adxc_select_command_file() {
 
     local index=1
     local command_file_name
+
     for command_file_name in "${command_files[@]}"; do
         adxc_load_command_file "${command_dir}/${command_file_name}"
         printf '[%d] %-24s %-17s %s\n' "${index}" "${COMMAND_NAME}" "${COMMAND_TYPE}" "${COMMAND_DESCRIPTION}"
@@ -323,7 +316,6 @@ adxc_attach_command_wizard() {
     adxc_select_command_file "Select command to attach" "${ADXC_COMMANDS_DIR}" || return 1
     adxc_load_command_file "${SELECTED_COMMAND_FILE}"
     command_name="${COMMAND_NAME}"
-
     link_file="${profile_dir}/commands/${command_name}.link"
 
     if [[ -f "${link_file}" ]]; then
@@ -333,11 +325,7 @@ adxc_attach_command_wizard() {
 
     printf '\nAttach command %s to profile %s? Type ATTACH to continue: ' "${command_name}" "${profile_name}"
     read -r confirmation || return 1
-
-    if [[ "${confirmation}" != "ATTACH" ]]; then
-        adxc_print_warning "Attach cancelled."
-        return 0
-    fi
+    [[ "${confirmation}" == "ATTACH" ]] || { adxc_print_warning "Attach cancelled."; return 0; }
 
     mkdir -p "${profile_dir}/commands"
     cat > "${link_file}" <<EOF_LINK
@@ -358,35 +346,29 @@ adxc_update_command_state() {
     local archived_by="${4:-}"
     local archived_date="${5:-}"
 
-    adxc_load_command_file "${command_file}"
-
     python3 - "$command_file" "$command_enabled" "$command_status" "$archived_by" "$archived_date" <<'PY_UPDATE'
 from pathlib import Path
 import sys
 
 path = Path(sys.argv[1])
-enabled = sys.argv[2]
-status = sys.argv[3]
-archived_by = sys.argv[4]
-archived_date = sys.argv[5]
-text = path.read_text()
 updates = {
-    'COMMAND_ENABLED': enabled,
-    'COMMAND_STATUS': status,
-    'COMMAND_ARCHIVED_BY': archived_by,
-    'COMMAND_ARCHIVED_DATE': archived_date,
+    'COMMAND_ENABLED': sys.argv[2],
+    'COMMAND_STATUS': sys.argv[3],
+    'COMMAND_ARCHIVED_BY': sys.argv[4],
+    'COMMAND_ARCHIVED_DATE': sys.argv[5],
 }
+text = path.read_text()
 for key, value in updates.items():
-    lines = []
-    replaced = False
+    found = False
+    new_lines = []
     for line in text.splitlines():
         if line.startswith(key + '='):
-            lines.append(f'{key}="{value}"')
-            replaced = True
+            new_lines.append(f'{key}="{value}"')
+            found = True
         else:
-            lines.append(line)
-    text = '\n'.join(lines) + '\n'
-    if not replaced:
+            new_lines.append(line)
+    text = '\n'.join(new_lines) + '\n'
+    if not found:
         text += f'{key}="{value}"\n'
 path.write_text(text)
 PY_UPDATE
@@ -447,7 +429,6 @@ adxc_retire_command_wizard() {
 }
 
 adxc_restore_command_wizard() {
-    local selected_number
     local command_name
     local restore_target
     local confirmation
