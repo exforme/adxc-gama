@@ -1,16 +1,16 @@
-# aDXC-GAMA 0.3.0-rc5 Manifest
+# aDXC-GAMA 0.3.0-rc6 Manifest
 
-## Main executable files
+## Executables
 
 - `bin/adxc`
 - `bin/adxc-admin`
 - `bin/adxc-cmd`
-- `bin/adxc-os`
 - `bin/adxc-help`
+- `bin/adxc-os`
 - `install.sh`
 - `uninstall.sh`
 
-## Administration files
+## Administration
 
 - `admin/adxc-enable-user.sh`
 - `admin/adxc-disable-user.sh`
@@ -22,12 +22,16 @@
 - `lib/adxc-common.sh`
 - `lib/adxc-colors.sh`
 - `lib/adxc-profile-management.sh`
+- `lib/adxc-command-management.sh`
 
 ## Runtime areas
 
+- `commands/`
 - `commands/global/`
+- `scripts/`
 - `profiles/`
 - `archive/profiles/`
+- `archive/commands/`
 - `templates/`
 - `docs/`
 - `optional/`
@@ -35,12 +39,8 @@
 - `test/`
 - `package/`
 
-## Priority 1 delivery
+## Locked priorities
 
-- Profile Management under `adxc-admin`
-- Create Profile
-- List Profiles with colorized state
-- Delete Profile
-- Disable and Archive
-- Permanent Delete
-- Restore Archived Profile
+- Priority 1: Profile Management
+- Priority 2: Command Management
+- Priority 3: Profile Directory Structure Standardization

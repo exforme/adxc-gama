@@ -2,8 +2,6 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA color helper library
 # -----------------------------------------------------------------------------
-# Color handling is centralized here so operational scripts remain readable.
-
 ADXC_RESET=""
 ADXC_BOLD=""
 ADXC_GREEN=""
@@ -36,7 +34,7 @@ adxc_status_color() {
         DISABLED|WARNING|WARN)
             printf '%s' "${ADXC_YELLOW}"
             ;;
-        ARCHIVED|INFO)
+        ARCHIVED|INFO|ATTACHED)
             printf '%s' "${ADXC_CYAN}"
             ;;
         ERROR|FAILED|NO|UNKNOWN)

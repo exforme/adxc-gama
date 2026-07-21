@@ -2,8 +2,6 @@
 # -----------------------------------------------------------------------------
 # aDXC-GAMA common runtime library
 # -----------------------------------------------------------------------------
-# Shared helper functions for paths, output, profile metadata and template data.
-
 set -o pipefail
 
 ADXC_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,7 +17,10 @@ ADXC_PRODUCT_NAME="${ADXC_PRODUCT_NAME:-aDXC-GAMA}"
 ADXC_VERSION="${ADXC_VERSION:-unknown}"
 ADXC_PROFILES_DIR="${ADXC_ROOT_DIR}/${ADXC_PROFILES_DIR_NAME:-profiles}"
 ADXC_TEMPLATES_DIR="${ADXC_ROOT_DIR}/${ADXC_TEMPLATES_DIR_NAME:-templates}"
-ADXC_ARCHIVE_DIR="${ADXC_ROOT_DIR}/${ADXC_ARCHIVE_DIR_NAME:-archive/profiles}"
+ADXC_COMMANDS_DIR="${ADXC_ROOT_DIR}/${ADXC_COMMANDS_DIR_NAME:-commands}"
+ADXC_SCRIPTS_DIR="${ADXC_ROOT_DIR}/${ADXC_SCRIPTS_DIR_NAME:-scripts}"
+ADXC_ARCHIVE_PROFILES_DIR="${ADXC_ROOT_DIR}/${ADXC_ARCHIVE_PROFILES_DIR_NAME:-archive/profiles}"
+ADXC_ARCHIVE_COMMANDS_DIR="${ADXC_ROOT_DIR}/${ADXC_ARCHIVE_COMMANDS_DIR_NAME:-archive/commands}"
 ADXC_COLOR_ENABLED="${ADXC_COLOR_ENABLED:-YES}"
 
 # shellcheck source=adxc-colors.sh
@@ -63,6 +64,11 @@ adxc_current_date() {
 }
 
 adxc_sanitize_name() {
+    local raw_name="$1"
+    printf '%s' "${raw_name}" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_.-'
+}
+
+adxc_sanitize_profile_name() {
     local raw_name="$1"
     printf '%s' "${raw_name}" | tr '[:lower:]' '[:upper:]' | tr -cd 'A-Z0-9_.-'
 }
@@ -117,5 +123,46 @@ adxc_load_template_config() {
     if [[ -f "${template_config}" ]]; then
         # shellcheck source=/dev/null
         source "${template_config}"
+    fi
+}
+
+adxc_command_config_path() {
+    local command_dir="$1"
+    local command_name="$2"
+    printf '%s/%s.cmd' "${command_dir}" "${command_name}"
+}
+
+adxc_load_command_file() {
+    local command_file="$1"
+
+    COMMAND_NAME=""
+    COMMAND_TYPE="unknown"
+    COMMAND_DESCRIPTION=""
+    COMMAND_ENABLED="NO"
+    COMMAND_STATUS="UNKNOWN"
+    COMMAND_CREATED_BY="unknown"
+    COMMAND_CREATED_DATE="unknown"
+    COMMAND_ARCHIVED_BY=""
+    COMMAND_ARCHIVED_DATE=""
+    COMMAND_LINE=""
+    SCRIPT_PATH=""
+
+    if [[ -f "${command_file}" ]]; then
+        # shellcheck source=/dev/null
+        source "${command_file}"
+    fi
+
+    if [[ -z "${COMMAND_NAME}" ]]; then
+        COMMAND_NAME="$(basename "${command_file}" .cmd)"
+    fi
+}
+
+adxc_relative_to_root() {
+    local input_path="$1"
+
+    if [[ "${input_path}" = /* ]]; then
+        printf '%s' "${input_path}"
+    else
+        printf '%s/%s' "${ADXC_ROOT_DIR}" "${input_path}"
     fi
 }

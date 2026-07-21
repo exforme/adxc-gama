@@ -1,113 +1,99 @@
-# aDXC-GAMA 0.3.0-rc5
+# aDXC-GAMA 0.3.0-rc6
 
 Profile-Based Operations Framework + Administration Console + Middleware Automation Platform.
 
-## What this release fixes
+## Release focus
 
-This package restores the complete package skeleton from the earlier GAMA baseline and adds the Priority 1 Profile Management implementation.
-
-## Included top-level structure
-
-```text
-bin/
-admin/
-lib/
-etc/
-commands/global/
-profiles/
-archive/profiles/
-templates/
-docs/
-optional/
-assets/logo/
-test/
-package/
-install.sh
-uninstall.sh
-VERSION
-README.md
-MANIFEST.md
-PACKAGE_TREE.txt
-CHANGELOG.md
-```
+This release combines the approved Priority 1, Priority 2 and Priority 3 architecture decisions into a near-demo-ready package.
 
 ## Priority 1: Profile Management
 
-Implemented under:
+Implemented under `adxc-admin`:
 
 ```text
-adxc-admin
-```
-
-Menu:
-
-```text
-Profile Management
-
 [1] Create Profile
 [2] List Profiles
 [3] Delete Profile
 [4] Restore Archived Profile
 ```
 
-## Profile Identity Model
-
-Profiles keep their real operational name:
-
-```bash
-PROFILE_NAME="TQM1"
-```
-
-The profile type is carried by metadata:
-
-```bash
-PROFILE_CLASS="MIQM"
-PROFILE_TEMPLATE="mq_miqm"
-```
-
-Dashboard display:
+Profiles are displayed as `PROFILE_CLASS + PROFILE_NAME`, for example:
 
 ```text
-[1] MIQM                    TQM1
-[2] STANDALONE              TQM11
+MIQM                    TQM1
+STANDALONE              TQM11
 ```
 
-## Fresh Install Profiles
+## Priority 2: Command Management
+
+Implemented under `adxc-admin`:
 
 ```text
-profiles/
-├── MQ_MIQM_EXAMPLE
-├── MQ_STANDALONE_EXAMPLE
-└── GENERIC_MW_EXAMPLE
+[1] Create Command
+[2] List Commands
+[3] Attach Command
+[4] Retire Command
+[5] Restore Retired Command
 ```
 
-Real customer profiles are created from templates through the Profile Wizard.
+Supported command types:
+
+```text
+single-command      One shell command with parameters, for example dspmq -x
+external-script     Existing script from scripts/, profiles/<PROFILE>/scripts/, or an absolute path
+```
+
+Command metadata is stored inside the command file itself.
+
+## Priority 3: Profile Directory Structure
+
+Locked profile structure:
+
+```text
+profiles/<PROFILE>/
+├── profile.conf
+├── commands/
+├── scripts/
+└── logs/
+```
+
+Removed from profile structure:
+
+```text
+menus/
+cache/
+```
+
+## Script model
+
+Profiles can use both:
+
+```text
+scripts/                         global reusable scripts
+profiles/<PROFILE>/scripts/      profile-local scripts
+```
+
+## Demo commands
+
+`MQ_MIQM_EXAMPLE` has two attached demo commands:
+
+```text
+cluster-status
+demo-global-healthcheck
+```
+
+Run examples:
+
+```bash
+./bin/adxc-cmd --profile MQ_MIQM_EXAMPLE
+./bin/adxc-cmd --run MQ_MIQM_EXAMPLE cluster-status
+./bin/adxc-cmd --run MQ_MIQM_EXAMPLE demo-global-healthcheck
+```
 
 ## Install
 
 ```bash
-tar -xzf aDXC-GAMA-0.3.0-rc5.tar.gz
-cd aDXC-GAMA-0.3.0-rc5
+tar -xzf aDXC-GAMA-0.3.0-rc6.tar.gz
+cd aDXC-GAMA-0.3.0-rc6
 ./install.sh /opt/adxc-gama
-```
-
-Optional root activation:
-
-```bash
-./install.sh /opt/adxc-gama --activate-root
-source /root/.adxc/activate.sh
-```
-
-## Uninstall
-
-Remove command symlinks but keep installed files:
-
-```bash
-./uninstall.sh
-```
-
-Remove symlinks and installed framework directory:
-
-```bash
-./uninstall.sh --remove-install-dir
 ```

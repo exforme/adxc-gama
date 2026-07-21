@@ -1,1 +1,1 @@
-# MQ_STANDALONE_EXAMPLE Scripts
+# MQ_STANDALONE_EXAMPLE Profile-Local Scripts

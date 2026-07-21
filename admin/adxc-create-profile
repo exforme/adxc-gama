@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Wrapper for profile creation through the administration console.
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec "${SCRIPT_DIR}/../bin/adxc-admin"

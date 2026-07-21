@@ -1,1 +1,1 @@
-# MQ_STANDALONE_EXAMPLE Commands
+# MQ_STANDALONE_EXAMPLE Attached Commands

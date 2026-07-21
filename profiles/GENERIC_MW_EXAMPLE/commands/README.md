@@ -1,1 +1,1 @@
-# GENERIC_MW_EXAMPLE Commands
+# GENERIC_MW_EXAMPLE Attached Commands

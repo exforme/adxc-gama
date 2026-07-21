@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-# Placeholder wrapper for future Command Management priority.
 set -euo pipefail
-printf 'Command creation wizard is planned for Priority 2.\n'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "${SCRIPT_DIR}/../bin/adxc-admin"

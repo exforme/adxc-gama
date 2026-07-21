@@ -1,0 +1,7 @@
+COMMAND REPOSITORY
+  cluster-status.cmd
+  demo-global-healthcheck.cmd
+
+GLOBAL HELPER COMMANDS
+  check-conn
+  grep-history
