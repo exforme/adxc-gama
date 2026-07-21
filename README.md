@@ -4,9 +4,8 @@ Profile-Based Operations Framework + Administration Console + Middleware Automat
 
 ## Release focus
 
-This release combines the approved Priority 1, Priority 2 and Priority 3 architecture decisions into a near-demo-ready package.
 
-## Priority 1: Profile Management
+: Profile Management
 
 Implemented under `adxc-admin`:
 
@@ -24,7 +23,7 @@ MIQM                    TQM1
 STANDALONE              TQM11
 ```
 
-## Priority 2: Command Management
+: Command Management
 
 Implemented under `adxc-admin`:
 
@@ -45,7 +44,7 @@ external-script     Existing script from scripts/, profiles/<PROFILE>/scripts/, 
 
 Command metadata is stored inside the command file itself.
 
-## Priority 3: Profile Directory Structure
+: Profile Directory Structure
 
 Locked profile structure:
 
